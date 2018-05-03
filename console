@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python3 -ic 'import data; import terms; import lexicon'
+
