@@ -1,20 +1,21 @@
+import collections
+import os
 import terms
 
 
-# Maps (multi)words to possible lexical MRs
-# TODO this is a stub, many more lexicon entries are needed
-_word_term_map = {
-    ('adjacent',): (
-        'next_to(_,_)',
-    ),
-    ('alaska',): (
-        'const(_,stateid(alaska))',
-    ),
-    ('biggest',): (
-        'largest(_,_)',
-        'longest(_,_)',
-    ),
-}
+def read_lexicon(path):
+    word_term_map = collections.defaultdict(list)
+    with open(path) as f:
+        for line in f:
+            if not line.split() or line.startswith('#'):
+                continue
+            mr, word = line.rsplit(maxsplit=1)
+            tokens = tuple(word.split(','))
+            word_term_map[tokens].append(mr)
+    return word_term_map
+
+
+_word_term_map = read_lexicon(os.path.join(os.path.dirname(__file__), 'lexicon.txt'))
 
 
 def meanings(word):
