@@ -536,7 +536,7 @@ parse([where,is,indianapolis,?], answer(A,(loc(B,A),const(B,cityid(indianapolis,
 parse([where,is,massachusetts,?], answer(A,(loc(B,A),const(B,stateid(massachusetts))))).
 parse([where,is,mount,whitney,?], answer(A,(loc(B,A),const(B,placeid('mount whitney'))))).
 parse([where,is,mount,whitney,located,?], answer(A,(loc(B,A),const(B,placeid('mount whitney'))))).
-parse([where,is,new,hampshire,?], answer(A,(loc(B,A),const(B,stateid('new hamsphire'))))).
+parse([where,is,new,hampshire,?], answer(A,(loc(B,A),const(B,stateid('new hampshire'))))).
 parse([where,is,new,orleans,?], answer(A,(loc(B,A),const(B,cityid('new orleans',_))))).
 parse([where,is,san,diego,?], answer(A,(loc(B,A),const(B,cityid('san diego',_))))).
 parse([where,is,san,jose,?], answer(A,(loc(B,A),const(B,cityid('san jose',_))))).
