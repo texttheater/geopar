@@ -50,6 +50,11 @@ class Variable:
         alignments.append((self, other))
         return True
 
+    def replace(self, old, new):
+        if self == old:
+            return new
+        return self
+
 
 class Atom:
 
@@ -71,6 +76,9 @@ class Atom:
 
     def __str__(self):
         return self.name
+
+    def replace(old, new):
+        return self
 
 
 class ComplexTerm:
@@ -118,6 +126,10 @@ class ComplexTerm:
                 return False
         return True
 
+    def replace(self, old, new):
+        new_args = [arg.replace(old, new) for arg in self.args]
+        return ComplexTerm(self.functor_name, new_args)
+
 
 class ConjunctiveTerm:
 
@@ -143,6 +155,10 @@ class ConjunctiveTerm:
                 return False
         return True
 
+    def replace(self, old, new):
+        new_conjuncts = [conj.replace(old, new) for conj in self.conjuncts]
+        return ConjunctiveTerm(new_conjuncts)
+
 
 class Number:
 
@@ -162,6 +178,9 @@ class Number:
 
     def __str__(self):
         return str(self.number)
+
+    def replace(self, old, new):
+        return self
 
 
 class List:
