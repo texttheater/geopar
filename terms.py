@@ -302,7 +302,7 @@ class TermReader:
         raise RuntimeError("couldn't parse term suffix: " + string)
 
 
-def string2term(string):
+def from_string(string):
     reader = TermReader()
     term, _ = reader.read_term(string)
     return term
