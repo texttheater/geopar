@@ -131,8 +131,8 @@ class ComplexTerm:
         return True
 
     def replace(self, old, new):
-        new_args = [arg.replace(old, new) for arg in self.args]
-        return ComplexTerm(self.functor_name, new_args)
+        args_new = [arg.replace(old, new) for arg in self.args]
+        return ComplexTerm(self.functor_name, args_new)
 
 
 class ConjunctiveTerm:
@@ -162,8 +162,8 @@ class ConjunctiveTerm:
         return True
 
     def replace(self, old, new):
-        new_conjuncts = [conj.replace(old, new) for conj in self.conjuncts]
-        return ConjunctiveTerm(new_conjuncts)
+        conjuncts_new = [conj.replace(old, new) for conj in self.conjuncts]
+        return ConjunctiveTerm(conjuncts_new)
 
 
 class Number:
