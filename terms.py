@@ -27,7 +27,9 @@ def _unquote(quoted_atom):
 
 class Variable:
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
+        if term_reader is None:
+            term_reader = TermReader()
         for name, var in term_reader.name_variable_dict.items():
             if var == self:
                 return name
@@ -61,7 +63,7 @@ class Atom:
     def __init__(self, name):
         self.name = name
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
         match = _ATOM_PATTERN.fullmatch(self.name)
         if match:
             return self.name
@@ -87,7 +89,9 @@ class ComplexTerm:
         self.functor_name = functor_name
         self.args = args
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
+        if term_reader is None:
+            term_reader = TermReader()
         if self.functor_name == 'parse' and len(self.args) == 2:
             sep = ', ' # quirk in the data
         elif self.functor_name == '\\+' and len(self.args) == 1:
@@ -136,7 +140,9 @@ class ConjunctiveTerm:
     def __init__(self, conjuncts):
         self.conjuncts = conjuncts
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
+        if term_reader is None:
+            term_reader = TermReader()
         return '(' + ','.join(conjunct.to_string(term_reader) for conjunct in self.conjuncts) + ')'
 
     def lexterms(self):
@@ -165,7 +171,7 @@ class Number:
     def __init__(self, number):
         self.number = number
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
         return str(self.number)
 
     def lexterms(self):
@@ -188,7 +194,9 @@ class List:
     def __init__(self, elements):
         self.elements = elements
 
-    def to_string(self, term_reader):
+    def to_string(self, term_reader=None):
+        if term_reader is None:
+            term_reader = TermReader()
         return '[' + ','.join(element.to_string(term_reader) for element in self.elements) + ']'
 
 
