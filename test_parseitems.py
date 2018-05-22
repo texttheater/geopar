@@ -1,4 +1,4 @@
-import items
+import parseitems
 import terms
 import unittest
 
@@ -11,7 +11,7 @@ class ItemsTestCase(unittest.TestCase):
         This test starts with the initial item for the example from the lecture
         notes (Table 1), applies the first four parsing actions from that
         example and succeeds if the correct item results."""
-        item = items.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
+        item = parseitems.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
         item = item.skip()
         item = item.skip()
         item = item.skip()
@@ -26,7 +26,7 @@ class ItemsTestCase(unittest.TestCase):
         This test starts with the initial item for the example from the lecture
         notes (Table 1), applies the parsing actions from that example and
         succeeds if the correct item results."""
-        item = items.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
+        item = parseitems.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
         item = item.skip()
         item = item.skip()
         item = item.skip()
