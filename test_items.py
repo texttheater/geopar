@@ -5,13 +5,28 @@ import unittest
 
 class ItemsTestCase(unittest.TestCase):
 
-    def test_items_example1(self):
+    def test_items_example1_skip_shift(self):
+        """Tests the implementation of the parsing actions.
+
+        This test starts with the initial item for the example from the lecture
+        notes (Table 1), applies the first four parsing actions from that
+        example and succeeds if the correct item results."""
+        item = items.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
+        item = item.skip()
+        item = item.skip()
+        item = item.skip()
+        item = item.shift(1, terms.from_string('capital(_, _)'))
+        self.assertEqual(len(item.stack), 1)
+        self.assertEqual(list(item.queue), ['of' 'the', 'state', 'with', 'the', 'largest', 'population'])
+        self.assertTrue(item.stack.head.equivalent(terms.from_string('capital(_, _)')))
+
+    def test_items_example1_full(self):
         """Tests the implementation of the parsing actions.
 
         This test starts with the initial item for the example from the lecture
         notes (Table 1), applies the parsing actions from that example and
-        succeeds if the """
-        item = items.initial_item(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
+        succeeds if the correct item results."""
+        item = items.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
         item = item.skip()
         item = item.skip()
         item = item.skip()
@@ -37,4 +52,4 @@ class ItemsTestCase(unittest.TestCase):
         self.assertTrue(item.queue.is_empty())
         self.assertTrue(item.is_finished())
         self.assertTrue(item.stack[0].equivalent(terms.from_string(
-            'capital(S, C), largest(P, (state(S), population(S, P)))')))
+            'answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')))
