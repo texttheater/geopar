@@ -1,3 +1,45 @@
+"""Classes and methods for representing GeoQuery terms.
+
+There are different term classes for different kinds of terms: Variable, Atom,
+Number, ComplexTerm, ConjunctiveTerm. List is also a term class but has
+limited functionality because GeoQuery MRs do not contain lists, lists are only
+used to represent token lists in NLU-MR pairs.
+
+Reading and Writing Terms
+=========================
+
+Strings like 'capital(S, C)' can be converted into a term object either
+directly with the from_string function or by creating TermReader object and
+using its read_term method. The TermReader object can subsequently be passed to
+the to_string method of the term or its subterms, which has the advantage that
+variables retain their original names when converting back to strings.
+
+Term Addresses
+==============
+
+A subterm S in a complex term T has an address. An address is a list of pairs
+of integers. The first component of each pair represents an argument number,
+the second, the position of a conjunct inside a conjunctive term (or 1 if the
+term isn't conjunctive). For example:
+
+    S        T                               ADDRESS
+    a(A, B)  b(C, a(A, B))                   [(2, 1)]
+    a(A, B)  b(C, (a(A, B), c(D, E)))        [(2, 1)]
+    c(D, E)  b(C, (a(A, B), c(D, E)))        [(2, 2)]
+    d(F, G)  b(C, (a(A, d(F, G)), c(D, E)))  [(2, 1), (2, 1)]
+
+Addresses are useful for "integrating" a new term U into T at some specific
+address, as is done in the "drop" and "lift" parse actions. For details, see
+the ComplexTerm.integrate method.
+
+Replacing Variables
+===================
+
+All term classes (except List) implement the replace method.
+term.replace(old, new) where old is a variable and new is some term returns a
+new version of term where all occurrences of old have been replaced with new.
+"""
+
 import re
 
 
@@ -133,6 +175,51 @@ class ComplexTerm:
     def replace(self, old, new):
         args_new = [arg.replace(old, new) for arg in self.args]
         return ComplexTerm(self.functor_name, args_new)
+
+    def integrate(self, address, i, term):
+        """Integrates term into the i-th argument of the term at address.
+
+        "Integrating" is what happens with terms that are "dropped" or "lifted"
+        into a complex term. If the i-th argument is a variable, it is replaced
+        by term. If it is already a conjunctive term, term is added as a new
+        conjunct. Otherwise, a new conjunctive term with the old argument and
+        term as conjuncts is created.
+
+        This method is non-destructive. It returns a pair (self_new, address_new)
+        where self_new represents the new, modified term, and address_new 
+        represents the address of term within self_new.
+        """
+        if address == []:
+            arg_old = self.args[i - 1]
+            if isinstance(arg_old, Variable):
+                arg_new = term
+                address_new = [(i, 1)]
+            elif isinstance(arg_old, ConjunctiveTerm):
+                l = len(arg_old.conjuncts)
+                arg_new = ConjunctiveTerm(arg_old.conjuncts + [term])
+                address_new = [(i, l + 1)]
+            else:
+                arg_new = ConjunctiveTerm([arg_old, term])
+                address_new = [(i, 2)]
+            self_new = ComplexTerm(self.functor_name,
+                self.args[:i - 1] + [arg_new] + self.args[i:])
+            return self_new, address_new
+        else:
+            arg_num, conj_num = address[0]
+            address_tail = address[1:]
+            arg_old = self.args[arg_num - 1]
+            if isinstance(arg_old, ConjunctiveTerm):
+                conj_old = arg_old.conjuncts[conj_num - 1]
+                conj_new, conj_address = conj_old.integrate(address_tail, i, term)
+                arg_new = ConjunctiveTerm(arg_old.conjuncts[:conj_num - 1] + [conj_new] + arg_old.conjuncts[conj_num:])
+            else:
+                assert conj_num == 1
+                conj_old = arg_old
+                conj_new, conj_address = conj_old.integrate(address_tail, i, term)
+                arg_new = conj_new
+            self_new = ComplexTerm(self.functor_name, self.args[:arg_num - 1] + [arg_new] + self.args[arg_num:])
+            address_new = [(arg_num, conj_num)] + conj_address
+            return self_new, address_new
 
 
 class ConjunctiveTerm:
