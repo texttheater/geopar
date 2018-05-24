@@ -40,14 +40,30 @@ class StackElement:
         return self.term.arg(address, arg_num)
 
     def integrate(self, secstack_position, arg_num, subterm):
-        """Integrates term into the i-th argument of the term at address.
+        """Integrates subterm into the i-th argument of a complex term.
 
-        See terms.ComplexTerm.integrate for details.
+        "Integrating" is what happens with terms that are "dropped" or "lifted"
+        into a complex term. If secstack_position is 0, then subterm is
+        integrated into the i-th argument of the complex term in this stack
+        element. If secstack_position is 1 or higher, subterm is instead
+        integrated into the i-th argument of a previously integrated term that
+        lives on the secondary stack. subterm becomes the new head of the
+        secondary stack.
+
+        This method is non-destructive. It returns a new stack element.
         """
         if secstack_position == 0:
             address = []
         else:
             address = self.secstack[secstack_position - 1]
-        term, address = self.term.integrate(address, arg_num, subterm)
-        secstack = self.secstack.push(address)
-        return StackElement(term, secstack)
+        old = self.term.arg(address, arg_num)
+        if isinstance(old, terms.Variable):
+            new = subterm
+            subterm_address = address + [(arg_num, 1)]
+        elif isinstance(old, terms.ConjunctiveTerm):
+            new = terms.ConjunctiveTerm(target.conjuncts + (subterm,))
+            subterm_address = address + [(arg_num, len(new.conjuncts))]
+        else:
+            new = terms.ConjunctiveTerm((old, subterm))
+            subterm_address = address + [(arg_num, 2)]
+        return StackElement(self.term.replace(old, new), self.secstack.push(subterm_address)) # TODO replace old everywhere on the stack?
