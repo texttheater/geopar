@@ -16,9 +16,10 @@ class ItemsTestCase(unittest.TestCase):
         item = item.skip()
         item = item.skip()
         item = item.shift(1, terms.from_string('capital(_, _)'))
-        self.assertEqual(len(item.stack), 1)
-        self.assertEqual(list(item.queue), ['of' 'the', 'state', 'with', 'the', 'largest', 'population'])
-        self.assertTrue(item.stack.head.term.equivalent(terms.from_string('capital(_, _)')))
+        self.assertEqual(len(item.stack), 2)
+        self.assertEqual(list(item.queue), ['of', 'the', 'state', 'with', 'the', 'largest', 'population'])
+        self.assertTrue(item.stack[0].term.equivalent(terms.from_string('capital(_, _)')))
+        self.assertTrue(item.stack[1].term.equivalent(terms.from_string('answer(_, _)')))
 
     def test_items_example1_full(self):
         """Tests the implementation of the parsing actions.
@@ -50,6 +51,6 @@ class ItemsTestCase(unittest.TestCase):
         item = item.idle()
         self.assertEqual(len(item.stack), 1)
         self.assertTrue(item.queue.is_empty())
-        self.assertTrue(item.is_finished())
+        self.assertTrue(item.finished)
         self.assertTrue(item.stack.head.term.equivalent(terms.from_string(
             'answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')))
