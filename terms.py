@@ -129,7 +129,7 @@ class ComplexTerm:
 
     def __init__(self, functor_name, args):
         self.functor_name = functor_name
-        self.args = args
+        self.args = tuple(args)
 
     def to_string(self, term_reader=None):
         if term_reader is None:
@@ -196,13 +196,13 @@ class ComplexTerm:
                 address_new = [(i, 1)]
             elif isinstance(arg_old, ConjunctiveTerm):
                 l = len(arg_old.conjuncts)
-                arg_new = ConjunctiveTerm(arg_old.conjuncts + [term])
+                arg_new = ConjunctiveTerm(arg_old.conjuncts + (term,))
                 address_new = [(i, l + 1)]
             else:
                 arg_new = ConjunctiveTerm([arg_old, term])
                 address_new = [(i, 2)]
             self_new = ComplexTerm(self.functor_name,
-                self.args[:i - 1] + [arg_new] + self.args[i:])
+                self.args[:i - 1] + (arg_new,) + self.args[i:])
             return self_new, address_new
         else:
             arg_num, conj_num = address[0]
@@ -211,13 +211,13 @@ class ComplexTerm:
             if isinstance(arg_old, ConjunctiveTerm):
                 conj_old = arg_old.conjuncts[conj_num - 1]
                 conj_new, conj_address = conj_old.integrate(address_tail, i, term)
-                arg_new = ConjunctiveTerm(arg_old.conjuncts[:conj_num - 1] + [conj_new] + arg_old.conjuncts[conj_num:])
+                arg_new = ConjunctiveTerm(arg_old.conjuncts[:conj_num - 1] + (conj_new,) + arg_old.conjuncts[conj_num:])
             else:
                 assert conj_num == 1
                 conj_old = arg_old
                 conj_new, conj_address = conj_old.integrate(address_tail, i, term)
                 arg_new = conj_new
-            self_new = ComplexTerm(self.functor_name, self.args[:arg_num - 1] + [arg_new] + self.args[arg_num:])
+            self_new = ComplexTerm(self.functor_name, self.args[:arg_num - 1] + (arg_new,) + self.args[arg_num:])
             address_new = [(arg_num, conj_num)] + conj_address
             return self_new, address_new
 
@@ -225,7 +225,7 @@ class ComplexTerm:
 class ConjunctiveTerm:
 
     def __init__(self, conjuncts):
-        self.conjuncts = conjuncts
+        self.conjuncts = tuple(conjuncts)
 
     def to_string(self, term_reader=None):
         if term_reader is None:
