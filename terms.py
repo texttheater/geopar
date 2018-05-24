@@ -308,8 +308,6 @@ class TermReader:
 
     def __init__(self):
         self.name_variable_dict = {}
-        self.name_atom_dict = {}
-        self.number_number_dict = {}
 
     def variable(self, name=None):
         if name is None:
@@ -320,14 +318,10 @@ class TermReader:
         return self.name_variable_dict[name]
 
     def atom(self, name):
-        if not name in self.name_atom_dict:
-            self.name_atom_dict[name] = Atom(name)
-        return self.name_atom_dict[name]
+        return Atom(name)
 
     def number(self, number):
-        if not number in self.number_number_dict:
-            self.number_number_dict[number] = Number(number)
-        return self.number_number_dict[number]
+        return Number(number)
 
     def read_term(self, string):
         match = _VARIABLE_PATTERN.match(string)
