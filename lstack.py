@@ -29,6 +29,11 @@ class LinkedStack:
         """
         return _NonEmptyLinkedStack(element, self)
 
+    def __getitem__(self, index):
+        if index == 0:
+            return self.head
+        return self.tail[index - 1]
+
 
 class _EmptyLinkedStack(LinkedStack):
 
@@ -41,7 +46,12 @@ class _EmptyLinkedStack(LinkedStack):
     def __len__(self):
         return 0
 
-    def __getitem__(self, index):
+    @property
+    def head(self):
+        raise IndexError()
+
+    @property
+    def tail(self):
         raise IndexError()
 
     def __iter__(self):
@@ -68,11 +78,6 @@ class _NonEmptyLinkedStack(LinkedStack):
 
     def __len__(self):
         return 1 + len(self.tail)
-
-    def __getitem__(self, index):
-        if index == 0:
-            return self.head
-        return self.tail[index - 1]
 
     def __iter__(self):
         yield self.head
