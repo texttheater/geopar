@@ -82,6 +82,9 @@ class Variable:
         return
         yield
 
+    def subterms(self):
+        yield self
+
     def equivalent(self, other, alignments=None):
         if alignments is None:
             alignments = []
@@ -115,6 +118,9 @@ class Atom:
     def lexterms(self):
         return
         yield
+
+    def subterms(self):
+        yield self
 
     def equivalent(self, other, alignments=None):
         return isinstance(other, Atom) and self.name == other.name
@@ -160,6 +166,11 @@ class ComplexTerm:
                 else:
                     args.append(arg)
             yield ComplexTerm(self.functor_name, args)
+
+    def subterms(self):
+        yield self
+        for arg in self.args:
+            yield from arg.subterms()
 
     def equivalent(self, other, alignments=None):
         if not isinstance(other, ComplexTerm):
@@ -212,6 +223,11 @@ class ConjunctiveTerm:
         for conjunct in self.conjuncts:
             yield from conjunct.lexterms()
 
+    def subterms(self):
+        yield self
+        for conjunct in self.conjuncts:
+            yield from conjunct.subterms()
+
     def equivalent(self, other, alignments=None):
         if not isinstance(other, ConjunctiveTerm):
             return False
@@ -240,6 +256,9 @@ class Number:
         return str(self.number)
 
     def lexterms(self):
+        yield self
+
+    def subterms(self):
         yield self
 
     def equivalent(self, other, alignments=None):

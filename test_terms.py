@@ -12,3 +12,9 @@ class TermsTestCase(unittest.TestCase):
         B = before.args[1]
         now = before.replace(A, B)
         self.assertTrue(now.equivalent(after))
+
+    def test_subterms(self):
+        term = terms.from_string(
+            'answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
+        subterms = list(term.subterms())
+        self.assertEqual(len(subterms), 14)
