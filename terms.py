@@ -68,7 +68,16 @@ def _unquote(quoted_atom):
     return between_part
 
 
-class Variable:
+# TODO rewrite lexterms in terms of subterms
+
+
+class Term:
+
+    def equivalent(self, other):
+        return self.subsumes(other) and other.subsumes(self)
+
+
+class Variable(Term):
 
     def to_string(self, term_reader=None):
         if term_reader is None:
@@ -85,19 +94,6 @@ class Variable:
     def subterms(self):
         yield self
 
-    def equivalent(self, other, alignments=None):
-        if alignments is None:
-            alignments = []
-        if not isinstance(other, Variable):
-            return False
-        for a, b in alignments:
-            if a == self:
-                return b == other
-            if b == other:
-                return False
-        alignments.append((self, other))
-        return True
-
     def subsumes(self, other, bindings=None):
         if bindings is None:
             bindings = {}
@@ -112,7 +108,7 @@ class Variable:
         return self
 
 
-class Atom:
+class Atom(Term):
 
     def __init__(self, name):
         self.name = name
@@ -130,9 +126,6 @@ class Atom:
     def subterms(self):
         yield self
 
-    def equivalent(self, other, alignments=None):
-        return isinstance(other, Atom) and self.name == other.name
-
     def subsumes(self, other, bindings=None):
         if not isinstance(other, Atom):
             return False
@@ -149,7 +142,7 @@ class Atom:
         return self
 
 
-class ComplexTerm:
+class ComplexTerm(Term):
 
     def __init__(self, functor_name, args):
         self.functor_name = functor_name
@@ -186,20 +179,6 @@ class ComplexTerm:
         yield self
         for arg in self.args:
             yield from arg.subterms()
-
-    def equivalent(self, other, alignments=None):
-        if not isinstance(other, ComplexTerm):
-            return False
-        if self.functor_name != other.functor_name:
-            return False
-        if len(self.args) != len(other.args):
-            return False
-        if alignments is None:
-            alignments = []
-        for a, b in zip(self.args, other.args):
-            if not a.equivalent(b, alignments):
-                return False
-        return True
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ComplexTerm):
@@ -238,7 +217,7 @@ class ComplexTerm:
             return conj.arg(address_tail, i)
 
 
-class ConjunctiveTerm:
+class ConjunctiveTerm(Term):
 
     def __init__(self, conjuncts):
         self.conjuncts = tuple(conjuncts)
@@ -256,18 +235,6 @@ class ConjunctiveTerm:
         yield self
         for conjunct in self.conjuncts:
             yield from conjunct.subterms()
-
-    def equivalent(self, other, alignments=None):
-        if not isinstance(other, ConjunctiveTerm):
-            return False
-        if len(self.conjuncts) != len(other.conjuncts):
-            return False
-        if alignments is None:
-            alignments = []
-        for a, b in zip(self.conjuncts, other.conjuncts):
-            if not a.equivalent(b, alignments):
-                return False
-        return True
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ConjunctiveTerm):
@@ -288,7 +255,7 @@ class ConjunctiveTerm:
         return ConjunctiveTerm(conjuncts_new)
 
 
-class Number:
+class Number(Term):
 
     def __init__(self, number):
         self.number = number
@@ -301,11 +268,6 @@ class Number:
 
     def subterms(self):
         yield self
-
-    def equivalent(self, other, alignments=None):
-        if not isinstance(other, Number):
-            return False
-        return self.number == other.number
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, Number):
