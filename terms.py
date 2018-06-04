@@ -98,6 +98,14 @@ class Variable:
         alignments.append((self, other))
         return True
 
+    def subsumes(self, other, bindings=None):
+        if bindings is None:
+            bindings = {}
+        if self in bindings:
+            return other == bindings[self]
+        bindings[self] = other
+        return True
+
     def replace(self, old, new):
         if self == old:
             return new
@@ -124,6 +132,13 @@ class Atom:
 
     def equivalent(self, other, alignments=None):
         return isinstance(other, Atom) and self.name == other.name
+
+    def subsumes(self, other, bindings=None):
+        if not isinstance(other, Atom):
+            return False
+        if not other.name == self.name:
+            return False
+        return True
 
     def __str__(self):
         return self.name
@@ -186,6 +201,20 @@ class ComplexTerm:
                 return False
         return True
 
+    def subsumes(self, other, bindings=None):
+        if not isinstance(other, ComplexTerm):
+            return False
+        if other.functor_name != self.functor_name:
+            return False
+        if len(other.args) != len(self.args):
+            return False
+        if bindings is None:
+            bindings = {}
+        for a, b in zip(self.args, other.args):
+            if not a.subsumes(b, bindings):
+                return False
+        return True
+
     def replace(self, old, new):
         if self == old:
             return new
@@ -240,6 +269,18 @@ class ConjunctiveTerm:
                 return False
         return True
 
+    def subsumes(self, other, bindings=None):
+        if not isinstance(other, ConjunctiveTerm):
+            return False
+        if len(other.conjuncts) != len(self.conjuncts):
+            return False
+        if bindings is None:
+            bindings = {}
+        for a, b in zip(self.conjuncts, other.conjuncts):
+            if not a.subsumes(b, bindings):
+                return False
+        return True
+
     def replace(self, old, new):
         if self == old:
             return new
@@ -262,6 +303,11 @@ class Number:
         yield self
 
     def equivalent(self, other, alignments=None):
+        if not isinstance(other, Number):
+            return False
+        return self.number == other.number
+
+    def subsumes(self, other, bindings=None):
         if not isinstance(other, Number):
             return False
         return self.number == other.number

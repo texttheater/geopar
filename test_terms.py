@@ -18,3 +18,64 @@ class TermsTestCase(unittest.TestCase):
             'answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
         subterms = list(term.subterms())
         self.assertEqual(len(subterms), 14)
+
+    def test_subsumes(self):
+        self.assertTrue(
+            terms.from_string('X').subsumes(
+            terms.from_string('Y')))
+        self.assertTrue(
+            terms.from_string('X').subsumes(
+            terms.from_string('a')))
+        self.assertFalse(
+            terms.from_string('a').subsumes(
+            terms.from_string('X')))
+        self.assertTrue(
+            terms.from_string('a').subsumes(
+            terms.from_string('a')))
+        self.assertFalse(
+            terms.from_string('a').subsumes(
+            terms.from_string('b')))
+        self.assertTrue(
+            terms.from_string('a(A, B)').subsumes(
+            terms.from_string('a(C, C)')))
+        self.assertFalse(
+            terms.from_string('a(C, C)').subsumes(
+            terms.from_string('a(A, B)')))
+        self.assertTrue(
+            terms.from_string('a(A, (b(B), C))').subsumes(
+            terms.from_string('a(X, (b(X), c(X)))')))
+        self.assertFalse(
+            terms.from_string('a(X, (b(X), c(X)))').subsumes(
+            terms.from_string('a(D, (b(D), C))')))
+
+    def test_equivalent(self):
+        self.assertTrue(
+            terms.from_string('X').equivalent(
+            terms.from_string('Y')))
+        self.assertFalse(
+            terms.from_string('X').equivalent(
+            terms.from_string('a')))
+        self.assertFalse(
+            terms.from_string('a').equivalent(
+            terms.from_string('X')))
+        self.assertTrue(
+            terms.from_string('a').equivalent(
+            terms.from_string('a')))
+        self.assertFalse(
+            terms.from_string('a').equivalent(
+            terms.from_string('b')))
+        self.assertFalse(
+            terms.from_string('a(A, B)').equivalent(
+            terms.from_string('a(C, C)')))
+        self.assertFalse(
+            terms.from_string('a(C, C)').equivalent(
+            terms.from_string('a(A, B)')))
+        self.assertFalse(
+            terms.from_string('a(A, (b(B), C))').equivalent(
+            terms.from_string('a(X, (b(X), c(X)))')))
+        self.assertFalse(
+            terms.from_string('a(X, (b(X), c(X)))').equivalent(
+            terms.from_string('a(D, (b(D), C))')))
+        self.assertTrue(
+            terms.from_string('a(A, (b(B), C))').equivalent(
+            terms.from_string('a(D, (b(E), F))')))
