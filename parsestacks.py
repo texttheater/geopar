@@ -61,7 +61,7 @@ class StackElement:
             new = subterm
             subterm_address = address + [(arg_num, 1)]
         elif isinstance(old, terms.ConjunctiveTerm):
-            new = terms.ConjunctiveTerm(target.conjuncts + (subterm,))
+            new = terms.ConjunctiveTerm(old.conjuncts + (subterm,))
             subterm_address = address + [(arg_num, len(new.conjuncts))]
         else:
             new = terms.ConjunctiveTerm((old, subterm))
