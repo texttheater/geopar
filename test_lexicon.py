@@ -24,7 +24,7 @@ class LexiconCoverageTestCase(unittest.TestCase):
         the NLU that in the lexicon is associated with that lexical term.
         """
         missing_terms = []
-        for words, reader, mr in data.geo880_train():
+        for words, mr in data.geo880_train():
             printed = False
             self.assertEqual(mr.functor_name, 'answer')
             self.assertEqual(len(mr.args), 2)
@@ -43,6 +43,6 @@ class LexiconCoverageTestCase(unittest.TestCase):
                     if not printed:
                         print(str(words))
                         printed = True
-                    print('WARNING: no word found that means ' + lexterm.to_string(reader))
+                    print('WARNING: no word found that means ' + lexterm.to_string())
                     missing_terms.append(lexterm)
         self.assertEqual(missing_terms, [])

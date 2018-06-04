@@ -6,11 +6,10 @@ def read_geoquery_file(path):
     result = []
     with open(path) as f:
         for line in f:
-            reader = terms.TermReader()
-            term, _ = reader.read_term(line)
+            term = terms.from_string(line)
             words = [str(w) for w in term.args[0].elements]
             mr = term.args[1]
-            result.append((words, reader, mr))
+            result.append((words, mr))
     return result
 
 

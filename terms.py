@@ -8,11 +8,9 @@ used to represent token lists in NLU-MR pairs.
 Reading and Writing Terms
 =========================
 
-Strings like 'capital(S, C)' can be converted into a term object either
-directly with the from_string function or by creating TermReader object and
-using its read_term method. The TermReader object can subsequently be passed to
-the to_string method of the term or its subterms, which has the advantage that
-variables retain their original names when converting back to strings.
+Strings like 'capital(S, C)' can be converted into a term object with the
+from_string function. They can be serialized as strings (with canonicalized
+variable names) with the to_string method.
 
 Term Addresses
 ==============
@@ -41,6 +39,8 @@ term where all token-identical occurrences of old have been replaced with new.
 Note that equivalence implies token-identity only for variables.
 """
 
+
+import collections
 import re
 
 
@@ -76,13 +76,10 @@ class Term:
 
 class Variable(Term):
 
-    def to_string(self, term_reader=None):
-        if term_reader is None:
-            term_reader = TermReader()
-        for name, var in term_reader.name_variable_dict.items():
-            if var == self:
-                return name
-        return '_'
+    def to_string(self, var_name_dict=None):
+        if var_name_dict is None:
+            var_name_dict = make_var_name_dict()
+        return var_name_dict[self]
 
     def subterms(self):
         yield self
@@ -106,7 +103,7 @@ class Atom(Term):
     def __init__(self, name):
         self.name = name
 
-    def to_string(self, term_reader=None):
+    def to_string(self, var_name_dict=None):
         match = _ATOM_PATTERN.fullmatch(self.name)
         if match:
             return self.name
@@ -137,19 +134,19 @@ class ComplexTerm(Term):
         self.functor_name = functor_name
         self.args = tuple(args)
 
-    def to_string(self, term_reader=None):
-        if term_reader is None:
-            term_reader = TermReader()
+    def to_string(self, var_name_dict=None):
+        if var_name_dict is None:
+            var_name_dict = make_var_name_dict()
         if self.functor_name == 'parse' and len(self.args) == 2:
             sep = ', ' # quirk in the data
         elif self.functor_name == '\\+' and len(self.args) == 1:
             if isinstance(self.args[0], ConjunctiveTerm):
-                return '\\+ ' + self.args[0].to_string(term_reader)
+                return '\\+ ' + self.args[0].to_string(var_name_dict)
             else:
-                return '\\+' + self.args[0].to_string(term_reader)
+                return '\\+' + self.args[0].to_string(var_name_dict)
         else:
             sep = ','
-        return self.functor_name + '(' + sep.join(arg.to_string(term_reader) for arg in self.args) + ')'
+        return self.functor_name + '(' + sep.join(arg.to_string(var_name_dict) for arg in self.args) + ')'
 
     def subterms(self):
         yield self
@@ -198,10 +195,10 @@ class ConjunctiveTerm(Term):
     def __init__(self, conjuncts):
         self.conjuncts = tuple(conjuncts)
 
-    def to_string(self, term_reader=None):
-        if term_reader is None:
-            term_reader = TermReader()
-        return '(' + ','.join(conjunct.to_string(term_reader) for conjunct in self.conjuncts) + ')'
+    def to_string(self, var_name_dict=None):
+        if var_name_dict is None:
+            var_name_dict = make_var_name_dict()
+        return '(' + ','.join(conjunct.to_string(var_name_dict) for conjunct in self.conjuncts) + ')'
 
     def subterms(self):
         yield self
@@ -232,7 +229,7 @@ class Number(Term):
     def __init__(self, number):
         self.number = number
 
-    def to_string(self, term_reader=None):
+    def to_string(self, var_name_dict=None):
         return str(self.number)
 
     def subterms(self):
@@ -257,117 +254,113 @@ class List:
     def __init__(self, elements):
         self.elements = elements
 
-    def to_string(self, term_reader=None):
-        if term_reader is None:
-            term_reader = TermReader()
-        return '[' + ','.join(element.to_string(term_reader) for element in self.elements) + ']'
+    def to_string(self, var_name_dict=None):
+        if var_name_dict is None:
+            var_name_dict = make_var_name_dict()
+        return '[' + ','.join(element.to_string(var_name_dict) for element in self.elements) + ']'
 
 
-class TermReader:
-
-    def __init__(self):
-        self.name_variable_dict = {}
-
-    def variable(self, name=None):
-        if name is None:
-            return Variable()
-        if not name in self.name_variable_dict:
-            var = Variable()
-            self.name_variable_dict[name] = var
-        return self.name_variable_dict[name]
-
-    def atom(self, name):
-        return Atom(name)
-
-    def number(self, number):
-        return Number(number)
-
-    def read_term(self, string):
-        match = _VARIABLE_PATTERN.match(string)
-        if match:
-            variable_name = match.group()
-            rest = string[match.end():]
-            return self.variable(variable_name), rest
-        match = _ANONYMOUS_VARIABLE_PATTERN.match(string)
-        if match:
-            rest = string[match.end():]
-            return self.variable(), rest
-        match = _COMPLEX_TERM_START_PATTERN.match(string)
-        if match:
-            functor_name = match.group('functor_name')
-            rest = string[match.end():]
-            args = []
-            arg1, rest = self.read_term(rest)
-            args.append(arg1)
-            while True:
-                match = _COMPLEX_TERM_END_PATTERN.match(rest)
-                if match:
-                    rest = rest[match.end():]
-                    return ComplexTerm(functor_name, args), rest
-                match = _COMMA_PATTERN.match(rest)
-                if not match:
-                    raise RuntimeError("couldn't parse term suffix: " + rest)
+def read_term(string, name_var_dict=None):
+    if name_var_dict is None:
+        name_var_dict = collections.defaultdict(Variable)
+    match = _VARIABLE_PATTERN.match(string)
+    if match:
+        variable_name = match.group()
+        rest = string[match.end():]
+        return name_var_dict[variable_name], rest
+    match = _ANONYMOUS_VARIABLE_PATTERN.match(string)
+    if match:
+        rest = string[match.end():]
+        return Variable(), rest
+    match = _COMPLEX_TERM_START_PATTERN.match(string)
+    if match:
+        functor_name = match.group('functor_name')
+        rest = string[match.end():]
+        args = []
+        arg1, rest = read_term(rest, name_var_dict)
+        args.append(arg1)
+        while True:
+            match = _COMPLEX_TERM_END_PATTERN.match(rest)
+            if match:
                 rest = rest[match.end():]
-                arg, rest = self.read_term(rest)
-                args.append(arg)
-        match = _ATOM_PATTERN.match(string)
-        if match:
-            name = match.group()
-            rest = string[match.end():]
-            return self.atom(name), rest
-        match = _QUOTED_ATOM_PATTERN.match(string)
-        if match:
-            name = _unquote(match.group())
-            rest = string[match.end():]
-            return self.atom(name), rest
-        match = _NUMBER_PATTERN.match(string)
-        if match:
-            number = int(match.group())
-            rest = string[match.end():]
-            return self.number(number), rest
-        match = _LIST_START_PATTERN.match(string)
-        if match:
-            rest = string[match.end():]
-            elements = []
-            element1, rest = self.read_term(rest)
-            elements.append(element1)
-            while True:
-                match = _LIST_END_PATTERN.match(rest)
-                if match:
-                    rest = rest[match.end():]
-                    return List(elements), rest
-                match = _COMMA_PATTERN.match(rest)
-                if not match:
-                    raise RuntimeError("couldn't parse term suffix: " + rest)
+                return ComplexTerm(functor_name, args), rest
+            match = _COMMA_PATTERN.match(rest)
+            if not match:
+                raise RuntimeError("couldn't parse term suffix: " + rest)
+            rest = rest[match.end():]
+            arg, rest = read_term(rest, name_var_dict)
+            args.append(arg)
+    match = _ATOM_PATTERN.match(string)
+    if match:
+        name = match.group()
+        rest = string[match.end():]
+        return Atom(name), rest
+    match = _QUOTED_ATOM_PATTERN.match(string)
+    if match:
+        name = _unquote(match.group())
+        rest = string[match.end():]
+        return Atom(name), rest
+    match = _NUMBER_PATTERN.match(string)
+    if match:
+        number = int(match.group())
+        rest = string[match.end():]
+        return Number(number), rest
+    match = _LIST_START_PATTERN.match(string)
+    if match:
+        rest = string[match.end():]
+        elements = []
+        element1, rest = read_term(rest, name_var_dict)
+        elements.append(element1)
+        while True:
+            match = _LIST_END_PATTERN.match(rest)
+            if match:
                 rest = rest[match.end():]
-                element, rest = self.read_term(rest)
-                elements.append(element)
-        match = _CONJUNCTIVE_TERM_START_PATTERN.match(string)
-        if match:
-            rest = string[match.end():]
-            conjuncts = []
-            conjunct1, rest = self.read_term(rest)
-            conjuncts.append(conjunct1)
-            while True:
-                match = _CONJUNCTIVE_TERM_END_PATTERN.match(rest)
-                if match:
-                    rest = rest[match.end():]
-                    return ConjunctiveTerm(conjuncts), rest
-                match = _COMMA_PATTERN.match(rest)
-                if not match:
-                    raise RuntimeError("couldn't parse term suffix: " + rest)
+                return List(elements), rest
+            match = _COMMA_PATTERN.match(rest)
+            if not match:
+                raise RuntimeError("couldn't parse term suffix: " + rest)
+            rest = rest[match.end():]
+            element, rest = read_term(rest, name_var_dict)
+            elements.append(element)
+    match = _CONJUNCTIVE_TERM_START_PATTERN.match(string)
+    if match:
+        rest = string[match.end():]
+        conjuncts = []
+        conjunct1, rest = read_term(rest, name_var_dict)
+        conjuncts.append(conjunct1)
+        while True:
+            match = _CONJUNCTIVE_TERM_END_PATTERN.match(rest)
+            if match:
                 rest = rest[match.end():]
-                conjunct, rest = self.read_term(rest)
-                conjuncts.append(conjunct)
-        match = _NEGATION_START_PATTERN.match(string)
-        if match:
-            rest = string[match.end():]
-            scope, rest = self.read_term(rest)
-            return ComplexTerm('\\+', [scope]), rest
-        raise RuntimeError("couldn't parse term suffix: " + string)
+                return ConjunctiveTerm(conjuncts), rest
+            match = _COMMA_PATTERN.match(rest)
+            if not match:
+                raise RuntimeError("couldn't parse term suffix: " + rest)
+            rest = rest[match.end():]
+            conjunct, rest = read_term(rest, name_var_dict)
+            conjuncts.append(conjunct)
+    match = _NEGATION_START_PATTERN.match(string)
+    if match:
+        rest = string[match.end():]
+        scope, rest = read_term(rest, name_var_dict)
+        return ComplexTerm('\\+', [scope]), rest
+    raise RuntimeError("couldn't parse term suffix: " + string)
 
 
 def from_string(string):
-    reader = TermReader()
-    term, _ = reader.read_term(string)
+    term, _ = read_term(string)
     return term
+
+
+def variable_names():
+    # The first 26 variable names are the letters of the alphabet:
+    yield from 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    # Then repeat ad infinitum, adding the number of the current iteration:
+    for i in itertools.count(start=1):
+        for l in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+            yield l + str(i)
+        
+
+def make_var_name_dict():
+    names = variable_names()
+    return collections.defaultdict(lambda: next(names))
