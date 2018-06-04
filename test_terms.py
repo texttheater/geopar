@@ -79,3 +79,11 @@ class TermsTestCase(unittest.TestCase):
         self.assertTrue(
             terms.from_string('a(A, (b(B), C))').equivalent(
             terms.from_string('a(D, (b(E), F))')))
+
+    def test_string_roundtrip(self):
+        t1 = terms.from_string('a(A, A)')
+        t2 = terms.from_string('a(B, B)')
+        self.assertTrue(t1.equivalent(t2))
+        t1 = t1.to_string()
+        t1 = terms.from_string(t1)
+        self.assertTrue(t1.equivalent(t2))
