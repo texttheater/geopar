@@ -29,7 +29,7 @@ class LexiconCoverageTestCase(unittest.TestCase):
             self.assertEqual(mr.functor_name, 'answer')
             self.assertEqual(len(mr.args), 2)
             self.assertIsInstance(mr.args[0], terms. Variable)
-            for lexterm in mr.args[1].lexterms():
+            for lexterm in lexicon.lexical_subterms(mr.args[1]):
                 word_found = False
                 unigrams = util.ngrams(1, words)
                 bigrams = util.ngrams(2, words)

@@ -68,9 +68,6 @@ def _unquote(quoted_atom):
     return between_part
 
 
-# TODO rewrite lexterms in terms of subterms
-
-
 class Term:
 
     def equivalent(self, other):
@@ -86,10 +83,6 @@ class Variable(Term):
             if var == self:
                 return name
         return '_'
-
-    def lexterms(self):
-        return
-        yield
 
     def subterms(self):
         yield self
@@ -118,10 +111,6 @@ class Atom(Term):
         if match:
             return self.name
         return "'" + self.name.replace("\\", "\\\\").replace("'", "\\'") + "'"
-
-    def lexterms(self):
-        return
-        yield
 
     def subterms(self):
         yield self
@@ -161,19 +150,6 @@ class ComplexTerm(Term):
         else:
             sep = ','
         return self.functor_name + '(' + sep.join(arg.to_string(term_reader) for arg in self.args) + ')'
-
-    def lexterms(self):
-        if self.functor_name == 'const' and len(self.args) == 2:
-            yield self
-        else:
-            args = []
-            for arg in self.args:
-                if isinstance(arg, ComplexTerm) or isinstance(arg, ConjunctiveTerm):
-                    yield from arg.lexterms()
-                    args.append(Variable())
-                else:
-                    args.append(arg)
-            yield ComplexTerm(self.functor_name, args)
 
     def subterms(self):
         yield self
@@ -227,10 +203,6 @@ class ConjunctiveTerm(Term):
             term_reader = TermReader()
         return '(' + ','.join(conjunct.to_string(term_reader) for conjunct in self.conjuncts) + ')'
 
-    def lexterms(self):
-        for conjunct in self.conjuncts:
-            yield from conjunct.lexterms()
-
     def subterms(self):
         yield self
         for conjunct in self.conjuncts:
@@ -262,9 +234,6 @@ class Number(Term):
 
     def to_string(self, term_reader=None):
         return str(self.number)
-
-    def lexterms(self):
-        yield self
 
     def subterms(self):
         yield self
