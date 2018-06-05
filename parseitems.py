@@ -99,21 +99,21 @@ class ParseItem:
                     for l in range(1, MAX_ARGS + 1):
                         try:
                             yield self.coref(i, j, k, l)
-                        except IndexError:
+                        except (IndexError, parsestacks.IllegalActionError):
                             continue
         # drop
         for i in range(MAX_SECSTACK_DEPTH + 1):
             for j in range(1, MAX_ARGS + 1):
                 try:
                     yield self.drop(i, j)
-                except IndexError:
+                except (IndexError, parsestacks.IllegalActionError):
                     continue
         # lift
         for i in range(MAX_SECSTACK_DEPTH + 1):
             for j in range(1, MAX_ARGS + 1):
                 try:
                     yield self.lift(i, j)
-                except IndexError:
+                except (IndexError, parsestacks.IllegalActionError):
                     continue
         # finish
         if not self.finished and len(self.stack) == 1 and self.queue.is_empty():

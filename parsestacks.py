@@ -2,6 +2,10 @@ import lstack
 import terms
 
 
+class IllegalActionError(Exception):
+    pass
+
+
 class StackElement:
 
     """Represents an element of the stack of an item.
@@ -26,6 +30,10 @@ class StackElement:
         Returns a new StackElement where this replacement has been done,
         retaining the secondary stack.
         """
+        if not isinstance(old, terms.Variable):
+            raise IllegalActionError('only variables may be replaced')
+        if old == new:
+            raise IllegalActionError('already the same variable')
         return StackElement(self.term.replace(old, new), self.secstack)
 
     def arg(self, secstack_position, arg_num):
@@ -52,6 +60,10 @@ class StackElement:
 
         This method is non-destructive. It returns a new stack element.
         """
+        if not isinstance(subterm, terms.ComplexTerm):
+            raise IllegalActionError('only complex terms may be integrated')
+        if secstack_position > len(self.secstack):
+            raise IllegalActionError('nonexistent secondary stack position')
         if secstack_position == 0:
             address = []
         else:
