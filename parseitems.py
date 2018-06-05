@@ -85,7 +85,7 @@ class ParseItem:
         if not self.queue.is_empty():
             yield self.skip()
         # shift
-        for token_length in range(1, MAX_TOKEN_LENGTH):
+        for token_length in range(1, MAX_TOKEN_LENGTH + 1):
             try:
                 token = tuple(self.queue[i] for i in range(token_length))
             except IndexError: # queue too short
