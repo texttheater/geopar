@@ -141,3 +141,6 @@ class ParseItem:
             return self.idle(*args)
         else:
             raise ValueError('invalid action: ' + action)
+
+    def action_sequence(self):
+        return list(reversed(self.actions))
