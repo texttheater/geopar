@@ -73,6 +73,12 @@ class Term:
     def equivalent(self, other):
         return self.subsumes(other) and other.subsumes(self)
 
+    def contains_subsumee(self, other, bindings=None):
+        for subterm in self.subterms():
+            if other.subsumes(subterm, bindings):
+                return True
+        return False
+
 
 class Variable(Term):
 
