@@ -1,3 +1,4 @@
+import geoquery
 import lexicon
 import lstack
 import parsestacks
@@ -7,6 +8,10 @@ import terms
 MAX_TOKEN_LENGTH = 3
 MAX_SECSTACK_DEPTH = 1
 MAX_ARGS = 3
+
+
+class IllegalActionError(Exception):
+    pass
 
 
 def initial(words):
@@ -43,8 +48,20 @@ class ParseItem:
         return ParseItem(stack, queue, False, self.actions.push(('shift', n, term.to_string())))
 
     def coref(self, i, j, k, l):
-        old = self.stack[1].arg(i, j)
-        new = self.stack[0].arg(k, l)
+        term1 = self.stack[1].at_secstack_position(i)
+        term0 = self.stack[0].at_secstack_position(k)
+        if not geoquery.coref_allowed(term1, j):
+            raise IllegalActionError('cannot coref this argument')
+        if not geoquery.coref_allowed(term0, l):
+            raise IllegalActionError('cannot coref this argument')
+        old = term1.args[j - 1]
+        new = term0.args[l - 1]
+        if not isinstance(old, terms.Variable):
+            raise IllegalActionError('can only coref variables')
+        if not isinstance(new, terms.Variable):
+            raise IllegalActionError('can only coref variables')
+        if old == new:
+            raise IllegalActionError('variables already corefed')
         stack = lstack.stack(se.replace(old, new) for se in self.stack)
         return ParseItem(stack, self.queue, False, self.actions.push(('coref', i, j, k, l)))
 
@@ -54,7 +71,7 @@ class ParseItem:
         stack = stack.pop()
         se_old = stack.head
         stack = stack.pop()
-        se_new = se_old.integrate(i, j, droppee)
+        se_new = se_old.drop(i, j, droppee)
         stack = stack.push(se_new)
         return ParseItem(stack, self.queue, False, self.actions.push(('drop', i, j)))
 
@@ -64,7 +81,7 @@ class ParseItem:
         stack = stack.pop()
         liftee = stack.head.term
         stack = stack.pop()
-        se_new = se_old.integrate(i, j, liftee)
+        se_new = se_old.lift(i, j, liftee)
         stack = stack.push(se_new)
         return ParseItem(stack, self.queue, False, self.actions.push(('lift', i, j)))
 
@@ -93,27 +110,27 @@ class ParseItem:
             for meaning in lexicon.meanings(token):
                 yield self.shift(token_length, meaning)
         # coref
-        for i in range(MAX_SECSTACK_DEPTH + 1):
+        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
             for j in range(1, MAX_ARGS + 1):
-                for k in range(MAX_SECSTACK_DEPTH + 1):
+                for k in range(MAX_SECSTACK_DEPTH, -1, -1):
                     for l in range(1, MAX_ARGS + 1):
                         try:
                             yield self.coref(i, j, k, l)
-                        except (IndexError, parsestacks.IllegalActionError):
+                        except (IndexError, IllegalActionError):
                             continue
         # drop
-        for i in range(MAX_SECSTACK_DEPTH + 1):
+        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
             for j in range(1, MAX_ARGS + 1):
                 try:
                     yield self.drop(i, j)
-                except (IndexError, parsestacks.IllegalActionError):
+                except (IndexError, IllegalActionError):
                     continue
         # lift
-        for i in range(MAX_SECSTACK_DEPTH + 1):
+        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
             for j in range(1, MAX_ARGS + 1):
                 try:
                     yield self.lift(i, j)
-                except (IndexError, parsestacks.IllegalActionError):
+                except (IndexError, IllegalActionError):
                     continue
         # finish
         if not self.finished and len(self.stack) == 1 and self.queue.is_empty():
