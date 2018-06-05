@@ -99,3 +99,16 @@ class TermsTestCase(unittest.TestCase):
         t1 = t1.to_string()
         t1 = terms.from_string(t1)
         self.assertTrue(t1.equivalent(t2))
+
+    def test_address(self):
+        t = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
+        s = t.at_address([])
+        self.assertTrue(s.equivalent(t))
+        s = t.at_address([(2, 1)])
+        self.assertTrue(s.equivalent(terms.from_string('capital(S, C)')))
+        s = t.at_address([(2, 2)])
+        self.assertTrue(s.equivalent(terms.from_string('largest(P, (state(S), population(S, P)))')))
+        s = t.at_address([(2, 2), (2, 1)])
+        self.assertTrue(s.equivalent(terms.from_string('state(S)')))
+        s = t.at_address([(2, 2), (2, 2)])
+        self.assertTrue(s.equivalent(terms.from_string('population(S, P)')))
