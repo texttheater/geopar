@@ -154,6 +154,8 @@ class ComplexTerm(Term):
             yield from arg.subterms()
 
     def subsumes(self, other, bindings=None):
+        if isinstance(other, ConjunctiveTerm):
+            return self.subsumes(other.conjuncts[0])
         if not isinstance(other, ComplexTerm):
             return False
         if other.functor_name != self.functor_name:
@@ -208,7 +210,7 @@ class ConjunctiveTerm(Term):
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ConjunctiveTerm):
             return False
-        if len(other.conjuncts) != len(self.conjuncts):
+        if len(other.conjuncts) < len(self.conjuncts):
             return False
         if bindings is None:
             bindings = {}
