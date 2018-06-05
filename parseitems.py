@@ -17,20 +17,22 @@ def initial(words):
     stack = lstack.stack((se,))
     queue = lstack.stack(words)
     finished = False
-    return ParseItem(stack, queue, finished)
+    actions = lstack.stack()
+    return ParseItem(stack, queue, finished, actions)
 
 
 class ParseItem:
 
-    def __init__(self, stack, queue, finished):
+    def __init__(self, stack, queue, finished, actions):
         self.stack = stack
         self.queue = queue
         self.finished = finished
+        self.actions = actions
 
     def skip(self):
         stack = self.stack
         queue = self.queue.pop()
-        return ParseItem(stack, queue, False)
+        return ParseItem(stack, queue, False, self.actions.push(('skip',)))
 
     def shift(self, n, term):
         se = parsestacks.StackElement(term)
@@ -38,13 +40,13 @@ class ParseItem:
         queue = self.queue
         for i in range(n):
             queue = queue.pop()
-        return ParseItem(stack, queue, False)
+        return ParseItem(stack, queue, False, self.actions.push(('shift', n, term.to_string())))
 
     def coref(self, i, j, k, l):
         old = self.stack[1].arg(i, j)
         new = self.stack[0].arg(k, l)
         stack = lstack.stack(se.replace(old, new) for se in self.stack)
-        return ParseItem(stack, self.queue, False)
+        return ParseItem(stack, self.queue, False, self.actions.push(('coref', i, j, k, l)))
 
     def drop(self, i, j):
         stack = self.stack
@@ -54,7 +56,7 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.integrate(i, j, droppee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False)
+        return ParseItem(stack, self.queue, False, self.actions.push(('drop', i, j)))
 
     def lift(self, i, j):
         stack = self.stack
@@ -64,35 +66,24 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.integrate(i, j, liftee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False)
+        return ParseItem(stack, self.queue, False, self.actions.push(('lift', i, j)))
 
     def finish(self):
         assert not self.finished
         assert len(self.stack) == 1
         assert self.queue.is_empty()
-        return ParseItem(self.stack, self.queue, True)
+        return ParseItem(self.stack, self.queue, True, self.actions.push(('finish',)))
 
     def idle(self):
         assert self.finished
-        return self
+        return ParseItem(self.stack, self.queue, True, self.actions.push(('idle',)))
 
     def successors(self):
         """Returns all possible successors.
-
-        More exactly, returns a dictionary whose keys are the possible actions
-        on this item and the values are the resulting successor items.
-
-        Subject to hard-coded maximum arguments for shift, coref, drop, lift
-        actions.
         """
-        return dict(self._successors())
-
-    def _successors(self):
         # skip
         if not self.queue.is_empty():
-            action = ('skip',)
-            succ = self.skip()
-            yield action, succ
+            yield self.skip()
         # shift
         for token_length in range(1, MAX_TOKEN_LENGTH):
             try:
@@ -100,48 +91,36 @@ class ParseItem:
             except IndexError: # queue too short
                 break
             for meaning in lexicon.meanings(token):
-                action = ('shift', token_length, meaning.to_string())
-                succ = self.shift(token_length, meaning)
-                yield action, succ
+                yield self.shift(token_length, meaning)
         # coref
         for i in range(MAX_SECSTACK_DEPTH + 1):
             for j in range(1, MAX_ARGS + 1):
                 for k in range(MAX_SECSTACK_DEPTH + 1):
                     for l in range(1, MAX_ARGS + 1):
-                        action = ('coref', i, j, k, l)
                         try:
-                            succ = self.coref(i, j, k, l)
+                            yield self.coref(i, j, k, l)
                         except IndexError:
                             continue
-                        yield action, succ
         # drop
         for i in range(MAX_SECSTACK_DEPTH + 1):
             for j in range(1, MAX_ARGS + 1):
-                action = ('drop', i, j)
                 try:
-                    succ = self.drop(i, j)
+                    yield self.drop(i, j)
                 except IndexError:
                     continue
-                yield action, succ
         # lift
         for i in range(MAX_SECSTACK_DEPTH + 1):
             for j in range(1, MAX_ARGS + 1):
-                action = ('lift', i, j)
                 try:
-                    succ = self.lift(i, j)
+                    yield self.lift(i, j)
                 except IndexError:
                     continue
-                yield action, succ
         # finish
         if not self.finished and len(self.stack) == 1 and self.queue.is_empty():
-            action = ('finish',)
-            succ = self.finish()
-            yield action, succ
+            yield self.finish()
         # idle
         if self.finished:
-            action = ('idle',)
-            succ = self.idle()
-            yield action, succ
+            yield self.idle()
 
     def successor(self, action, *args):
         if action == 'skip':

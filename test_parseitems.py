@@ -1,3 +1,4 @@
+import oracle
 import parseitems
 import terms
 import unittest
@@ -62,6 +63,7 @@ class ItemsTestCase(unittest.TestCase):
         method and make sure that it generates all the correction actions/items.
         """
         item = parseitems.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
+        target_mr = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
         actions = [
                 ('skip',),
                 ('skip',),
@@ -87,9 +89,10 @@ class ItemsTestCase(unittest.TestCase):
         ]
         for action in actions:
             successors = item.successors()
-            item = successors[action]
+            action_successor_dict = {s.actions.head: s for s in successors}
+            item = action_successor_dict[action]
+            self.assertTrue(oracle.accept(item, target_mr))
         self.assertEqual(len(item.stack), 1)
         self.assertTrue(item.queue.is_empty())
         self.assertTrue(item.finished)
-        self.assertTrue(item.stack.head.term.equivalent(terms.from_string(
-            'answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')))
+        self.assertTrue(item.stack.head.term.equivalent(target_mr))
