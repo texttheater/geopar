@@ -47,14 +47,13 @@ class StackElement:
 
     def arg(self, secstack_position, arg_num):
         """Returns the i-th argument of the subterm at the given address.
-
-        See terms.ComplexTerm.arg for details.
         """
         if secstack_position == 0:
             address = []
         else:
             address = self.secstack[secstack_position - 1]
-        return self.term.arg(address, arg_num)
+        subterm = self.term.at_address(address)
+        return subterm.args[arg_num - 1]
 
     def integrate(self, secstack_position, arg_num, subterm):
         """Integrates subterm into the i-th argument of a complex term.
@@ -77,7 +76,7 @@ class StackElement:
             address = []
         else:
             address = self.secstack[secstack_position - 1]
-        old = self.term.arg(address, arg_num)
+        old = self.term.at_address(address).args[arg_num - 1]
         if isinstance(old, terms.Variable):
             new = subterm
             subterm_address = address + [(arg_num, 1)]

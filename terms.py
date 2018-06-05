@@ -175,21 +175,20 @@ class ComplexTerm(Term):
         args_new = [arg.replace(old, new) for arg in self.args]
         return ComplexTerm(self.functor_name, args_new)
 
-    def arg(self, address, i):
-        """Returns the i-th argument of the subterm at the given address.
+    def at_address(self, address):
+        """Returns the subterm at the given address.
         """
         if address == []:
-            return self.args[i - 1]
+            return self
+        arg_num, conj_num = address[0]
+        address_tail = address[1:]
+        arg = self.args[arg_num - 1]
+        if isinstance(arg, ConjunctiveTerm):
+            conj = arg.conjuncts[conj_num - 1]
         else:
-            arg_num, conj_num = address[0]
-            address_tail = address[1:]
-            arg = self.args[arg_num - 1]
-            if isinstance(arg, ConjunctiveTerm):
-                conj = arg.conjuncts[conj_num - 1]
-            else:
-                assert conj_num == 1
-                conj = arg
-            return conj.arg(address_tail, i)
+            assert conj_num == 1
+            conj = arg
+        return conj.at_address(address_tail)
 
 
 class ConjunctiveTerm(Term):
