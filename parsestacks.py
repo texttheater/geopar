@@ -6,6 +6,15 @@ class IllegalActionError(Exception):
     pass
 
 
+def to_string(stack):
+    l = []
+    var_name_dict = terms.make_var_name_dict()
+    for se in stack:
+        l.append((se.term.to_string(var_name_dict),
+            list(se.secstack)))
+    return str(l)
+
+
 class StackElement:
 
     """Represents an element of the stack of an item.
