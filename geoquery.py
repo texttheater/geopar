@@ -2,6 +2,10 @@
 """
 
 
+import lexicon
+import parseitems
+
+
 def coref_allowed(term, arg_num):
     if term.functor_name in ('most', 'fewest'):
         return arg_num in (1, 2)
@@ -22,3 +26,16 @@ def integrate_allowed(term, arg_num):
     if len(term.functor_name) == 1: # single-letter names for testing
         return True
     return False
+
+
+def skip_allowed(queue):
+    if queue.head in ('is', 'of', 'with'):
+        return True
+    for token_length in range(1, parseitems.MAX_TOKEN_LENGTH + 1):
+        try:
+            token = tuple(queue[i] for i in range(token_length))
+        except IndexError:
+            break
+        if lexicon.meanings(token):
+            return False
+    return True

@@ -35,6 +35,11 @@ class ParseItem:
         self.actions = actions
 
     def skip(self):
+        if not geoquery.skip_allowed(self.queue):
+            # HACK: ideally we'd like to allow skipping any word and let the
+            # learning algorithm figure out when not to do it. But that makes
+            # the search space explode.
+            raise IllegalActionError('cannot skip this word')
         stack = self.stack
         queue = self.queue.pop()
         return ParseItem(stack, queue, False, self.actions.push(('skip',)))
@@ -86,21 +91,27 @@ class ParseItem:
         return ParseItem(stack, self.queue, False, self.actions.push(('lift', i, j)))
 
     def finish(self):
-        assert not self.finished
-        assert len(self.stack) == 1
-        assert self.queue.is_empty()
+        if self.finished:
+            raise IllegalActionError('already finished')
+        if len(self.stack) != 1:
+            raise IllegalActionError('stack size must be 1 to finish')
+        if not self.queue.is_empty():
+            raise IllegalActionError('queue must be empty to finish')
         return ParseItem(self.stack, self.queue, True, self.actions.push(('finish',)))
 
     def idle(self):
-        assert self.finished
+        if not self.finished:
+            raise IllegalActionError('not finished')
         return ParseItem(self.stack, self.queue, True, self.actions.push(('idle',)))
 
     def successors(self):
         """Returns all possible successors.
         """
         # skip
-        if not self.queue.is_empty():
+        try:
             yield self.skip()
+        except (IndexError, IllegalActionError):
+            pass
         # shift
         for token_length in range(1, MAX_TOKEN_LENGTH + 1):
             try:

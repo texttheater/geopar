@@ -20,9 +20,6 @@ def action_sequence(words, target_mr):
         beam = [s for i in beam for s in i.successors()]
         # Keep only acceptable ones:
         beam = [i for i in beam if accept(i, target_mr)]
-        # HACK: disallow skip if shift is possible
-        if any(i.actions.head[0] == 'shift' for i in beam):
-            beam = [i for i in beam if i.actions.head[0] != 'skip']
         # HACK: always do coref/drop/lift before skip
         if any(i.actions.head[0] in ('shift', 'coref', 'drop', 'lift') for i in beam):
             beam = [i for i in beam if i.actions.head[0] != 'skip']
