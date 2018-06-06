@@ -217,9 +217,25 @@ class ComplexTerm(Term):
                            (new,) + self.args[arg_num:]), conj_num
 
     def lift(self, arg_num, subterm):
-        # HACK we should be integrating subterm from the left now, not from the
-        # right! However, then the addresses change! What to do?
-        return self.drop(arg_num, subterm)
+        """Lift subterm into the arg_num-th argument.
+
+        This method is non-destructive. It returns a pair (term, conj_num)
+        where term is the resulting term and conj_num is the new position of
+        subterm among any sibling conjuncts. This is always 1, it is only
+        returned for symmetry with drop.
+        """
+        old = self.args[arg_num - 1]
+        if isinstance(old, Variable):
+            new = subterm
+            conj_num = 1
+        elif isinstance(old, ConjunctiveTerm):
+            new = ConjunctiveTerm((subterm,) + old.conjuncts)
+            conj_num = 1
+        else:
+            new = ConjunctiveTerm((subterm, old))
+            conj_num = 1
+        return ComplexTerm(self.functor_name, self.args[:arg_num - 1] + \
+                           (new,) + self.args[arg_num:]), conj_num
 
 
 class ConjunctiveTerm(Term):

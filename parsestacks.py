@@ -75,6 +75,23 @@ class StackElement:
             raise parseitems.IllegalActionError('cannot lift into this argument')
         new, conj_num = old.lift(arg_num, liftee)
         term = self.term.replace(old, new)
-        secstack = self.secstack.push(address + [(arg_num, conj_num)])
-        # TODO adapt addresses??
+        liftee_address = address + [(arg_num, conj_num)]
+        secstack = lstack.stack(fix_address(a, liftee_address) for a in self.secstack)
+        secstack = secstack.push(liftee_address)
         return StackElement(term, secstack)
+
+
+def fix_address(old_address, liftee_address):
+    """Fixes addresses that have become invalid by lifting.
+
+    If a term t was previously at old_address and a term has been lifted and is
+    now at liftee_address, returns the new address of t.
+    """
+    l = len(liftee_address) - 1
+    if len(old_address) > l and old_address[:l] == liftee_address[:l] and old_address[l][0] == liftee_address[l][0]:
+        arg_num, conj_num = old_address[l]
+        conj_num += 1
+        new_address = old_address[:l] + [(arg_num, conj_num)] + old_address[l + 1:]
+    else:
+        new_address = old_address
+    return new_address
