@@ -128,7 +128,7 @@ class Atom(Term):
     def __str__(self):
         return self.name
 
-    def replace(old, new):
+    def replace(self, old, new):
         if self == old:
             return new
         return self
