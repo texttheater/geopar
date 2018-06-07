@@ -59,6 +59,13 @@ class TermsTestCase(unittest.TestCase):
         self.assertFalse(
             terms.from_string('(a(A), b(B))').subsumes(
             terms.from_string('a(A)')))
+        self.assertFalse(
+            terms.from_string('answer(A,(capital(B,A),largest(C,(state(A),population(D,E)))))').subsumes(
+            terms.from_string('answer(C,(capital(S,C),largest(P,(state(S),population(S,P)))))')))
+        self.assertFalse(
+            terms.from_string('answer(A,(state(A),population(D,E)))').subsumes(
+            terms.from_string('answer(C,(state(S),population(S,P)))')))
+
 
     def test_equivalent(self):
         self.assertTrue(
@@ -91,6 +98,10 @@ class TermsTestCase(unittest.TestCase):
         self.assertTrue(
             terms.from_string('a(A, (b(B), C))').equivalent(
             terms.from_string('a(D, (b(E), F))')))
+        self.assertFalse(
+            terms.from_string('answer(A,(capital(B,A),largest(C,(state(A),population(D,E)))))').equivalent(
+            terms.from_string('answer(C,(capital(S,C),largest(P,(state(S),population(S,P)))))')))
+
 
     def test_string_roundtrip(self):
         t1 = terms.from_string('a(A, A)')
@@ -100,15 +111,32 @@ class TermsTestCase(unittest.TestCase):
         t1 = terms.from_string(t1)
         self.assertTrue(t1.equivalent(t2))
 
-    def test_address(self):
+    def test_left_address(self):
         t = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
-        s = t.at_address([])
+        s = t.left_address([])
         self.assertTrue(s.equivalent(t))
-        s = t.at_address([(2, 1)])
+        s = t.left_address([1])
+        self.assertTrue(s.equivalent(terms.from_string('C')))
+        s = t.left_address([2])
         self.assertTrue(s.equivalent(terms.from_string('capital(S, C)')))
-        s = t.at_address([(2, 2)])
+        s = t.left_address([2, 1])
+        self.assertTrue(s.equivalent(terms.from_string('S')))
+        s = t.left_address([2, 2])
+        self.assertTrue(s.equivalent(terms.from_string('C')))
+
+    def test_right_address(self):
+        t = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
+        s = t.right_address([])
+        self.assertTrue(s.equivalent(t))
+        s = t.right_address([1])
+        self.assertTrue(s.equivalent(terms.from_string('C')))
+        s = t.right_address([2])
         self.assertTrue(s.equivalent(terms.from_string('largest(P, (state(S), population(S, P)))')))
-        s = t.at_address([(2, 2), (2, 1)])
-        self.assertTrue(s.equivalent(terms.from_string('state(S)')))
-        s = t.at_address([(2, 2), (2, 2)])
+        s = t.right_address([2, 1])
+        self.assertTrue(s.equivalent(terms.from_string('P')))
+        s = t.right_address([2, 2])
         self.assertTrue(s.equivalent(terms.from_string('population(S, P)')))
+        s = t.right_address([2, 2, 1])
+        self.assertTrue(s.equivalent(terms.from_string('S')))
+        s = t.right_address([2, 2, 2])
+        self.assertTrue(s.equivalent(terms.from_string('P')))

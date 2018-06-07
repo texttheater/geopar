@@ -15,20 +15,10 @@ variable names) with the to_string method.
 Term Addresses
 ==============
 
-A subterm S in a complex term T has an address. An address is a list of pairs
-of integers. The first component of each pair represents an argument number,
-the second, the position of a conjunct inside a conjunctive term (or 1 if the
-term isn't conjunctive). For example:
-
-    S        T                               ADDRESS
-    a(A, B)  b(C, a(A, B))                   [(2, 1)]
-    a(A, B)  b(C, (a(A, B), c(D, E)))        [(2, 1)]
-    c(D, E)  b(C, (a(A, B), c(D, E)))        [(2, 2)]
-    d(F, G)  b(C, (a(A, d(F, G)), c(D, E)))  [(2, 1), (2, 1)]
-
-Addresses are useful for "integrating" a new term U into T at some specific
-address, as is done in the "drop" and "lift" parse actions. For details, see
-the ComplexTerm.integrate method.
+The methods left_address and right_address, given a list of argument numbers to
+be read from outermost to innermost, return the subterm at the given address.
+Conjunctive terms cannot be addressed; the leftmost/rightmost conjunct is
+addressed instead.
 
 Replacing Terms
 ===============
@@ -42,6 +32,7 @@ Note that equivalence implies token-identity only for variables.
 
 import collections
 import re
+import util
 
 
 _VARIABLE_PATTERN = re.compile('[A-Z]')
@@ -78,6 +69,14 @@ class Term:
             if other.subsumes(subterm, bindings):
                 return True
         return False
+
+    def left_address(self, address):
+        assert len(address) == 0
+        return self
+
+    def right_address(self, address):
+        assert len(address) == 0
+        return self
 
 
 class Variable(Term):
@@ -161,7 +160,10 @@ class ComplexTerm(Term):
 
     def subsumes(self, other, bindings=None):
         if isinstance(other, ConjunctiveTerm):
-            return self.subsumes(other.conjuncts[0])
+            for conjunct in other.conjuncts:
+                if self.subsumes(conjunct):
+                    return True
+            return False
         if not isinstance(other, ComplexTerm):
             return False
         if other.functor_name != self.functor_name:
@@ -181,61 +183,15 @@ class ComplexTerm(Term):
         args_new = [arg.replace(old, new) for arg in self.args]
         return ComplexTerm(self.functor_name, args_new)
 
-    def at_address(self, address):
-        """Returns the subterm at the given address.
-        """
-        if address == []:
+    def left_address(self, address):
+        if len(address) == 0:
             return self
-        arg_num, conj_num = address[0]
-        address_tail = address[1:]
-        arg = self.args[arg_num - 1]
-        if isinstance(arg, ConjunctiveTerm):
-            conj = arg.conjuncts[conj_num - 1]
-        else:
-            assert conj_num == 1
-            conj = arg
-        return conj.at_address(address_tail)
+        return self.args[address[0] - 1].left_address(address[1:])
 
-    def drop(self, arg_num, subterm):
-        """Drop subterm into the arg_num-th argument.
-
-        This method is non-destructive. It returns a pair (term, conj_num)
-        where term is the resulting term and conj_num is the new position of
-        subterm among any sibling conjuncts.
-        """
-        old = self.args[arg_num - 1]
-        if isinstance(old, Variable):
-            new = subterm
-            conj_num = 1
-        elif isinstance(old, ConjunctiveTerm):
-            new = ConjunctiveTerm(old.conjuncts + (subterm,))
-            conj_num = len(new.conjuncts)
-        else:
-            new = ConjunctiveTerm((old, subterm))
-            conj_num = 2
-        return ComplexTerm(self.functor_name, self.args[:arg_num - 1] + \
-                           (new,) + self.args[arg_num:]), conj_num
-
-    def lift(self, arg_num, subterm):
-        """Lift subterm into the arg_num-th argument.
-
-        This method is non-destructive. It returns a pair (term, conj_num)
-        where term is the resulting term and conj_num is the new position of
-        subterm among any sibling conjuncts. This is always 1, it is only
-        returned for symmetry with drop.
-        """
-        old = self.args[arg_num - 1]
-        if isinstance(old, Variable):
-            new = subterm
-            conj_num = 1
-        elif isinstance(old, ConjunctiveTerm):
-            new = ConjunctiveTerm((subterm,) + old.conjuncts)
-            conj_num = 1
-        else:
-            new = ConjunctiveTerm((subterm, old))
-            conj_num = 1
-        return ComplexTerm(self.functor_name, self.args[:arg_num - 1] + \
-                           (new,) + self.args[arg_num:]), conj_num
+    def right_address(self, address):
+        if len(address) == 0:
+            return self
+        return self.args[address[0] - 1].right_address(address[1:])
 
 
 class ConjunctiveTerm(Term):
@@ -260,16 +216,24 @@ class ConjunctiveTerm(Term):
             return False
         if bindings is None:
             bindings = {}
-        for a, b in zip(self.conjuncts, other.conjuncts):
-            if not a.subsumes(b, bindings):
-                return False
-        return True
+        for conjuncts in util.ngrams(len(self.conjuncts), other.conjuncts):
+            b = dict(bindings) # temporary copy of bindings
+            if subsume(self.conjuncts, conjuncts, b):
+                bindings.update(b)
+                return True
+        return False
 
     def replace(self, old, new):
         if self == old:
             return new
         conjuncts_new = [conj.replace(old, new) for conj in self.conjuncts]
         return ConjunctiveTerm(conjuncts_new)
+
+    def left_address(self, address):
+        return self.conjuncts[0].left_address(address)
+
+    def right_address(self, address):
+        return self.conjuncts[-1].right_address(address)
 
 
 class Number(Term):
@@ -412,3 +376,12 @@ def variable_names():
 def make_var_name_dict():
     names = variable_names()
     return collections.defaultdict(lambda: next(names))
+
+
+def subsume(terms1, terms2, bindings):
+    """Checks subsumption of two lists of terms.
+    """
+    for term1, term2 in zip(terms1, terms2):
+        if not term1.subsumes(term2, bindings):
+            return False
+    return True

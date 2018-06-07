@@ -1,13 +1,85 @@
 import geoquery
 import lexicon
 import lstack
-import parsestacks
 import terms
 
 
 MAX_TOKEN_LENGTH = 3
-MAX_SECSTACK_DEPTH = 1
-MAX_ARGS = 3
+POSSIBLE_COREF_ACTIONS = [ # TODO Do we need more? less? Order okay?
+    ('coref', (3, 3), (3,)),
+    ('coref', (3, 3), (2,)),
+    ('coref', (3, 3), (1,)),
+    ('coref', (3, 2), (3,)),
+    ('coref', (3, 2), (2,)),
+    ('coref', (3, 2), (1,)),
+    ('coref', (3, 1), (3,)),
+    ('coref', (3, 1), (2,)),
+    ('coref', (3, 1), (1,)),
+    ('coref', (2, 3), (3,)),
+    ('coref', (2, 3), (2,)),
+    ('coref', (2, 3), (1,)),
+    ('coref', (2, 2), (3,)),
+    ('coref', (2, 2), (2,)),
+    ('coref', (2, 2), (1,)),
+    ('coref', (2, 1), (3,)),
+    ('coref', (2, 1), (2,)),
+    ('coref', (2, 1), (1,)),
+    ('coref', (1, 3), (3,)),
+    ('coref', (1, 3), (2,)),
+    ('coref', (1, 3), (1,)),
+    ('coref', (1, 2), (3,)),
+    ('coref', (1, 2), (2,)),
+    ('coref', (1, 2), (1,)),
+    ('coref', (1, 1), (3,)),
+    ('coref', (1, 1), (2,)),
+    ('coref', (1, 1), (1,)),
+#    ('coref', (3,), (3, 3)),
+#    ('coref', (2,), (3, 3)),
+#    ('coref', (1,), (3, 3)),
+#    ('coref', (3,), (3, 2)),
+#    ('coref', (2,), (3, 2)),
+#    ('coref', (1,), (3, 2)),
+#    ('coref', (3,), (3, 1)),
+#    ('coref', (2,), (3, 1)),
+#    ('coref', (1,), (3, 1)),
+#    ('coref', (3,), (2, 3)),
+#    ('coref', (2,), (2, 3)),
+#    ('coref', (1,), (2, 3)),
+#    ('coref', (3,), (2, 2)),
+#    ('coref', (2,), (2, 2)),
+#    ('coref', (1,), (2, 2)),
+#    ('coref', (3,), (2, 1)),
+#    ('coref', (2,), (2, 1)),
+#    ('coref', (1,), (2, 1)),
+#    ('coref', (3,), (1, 3)),
+#    ('coref', (2,), (1, 3)),
+#    ('coref', (1,), (1, 3)),
+#    ('coref', (3,), (1, 2)),
+#    ('coref', (2,), (1, 2)),
+#    ('coref', (1,), (1, 2)),
+#    ('coref', (3,), (1, 1)),
+#    ('coref', (2,), (1, 1)),
+#    ('coref', (1,), (1, 1)),
+    ('coref', (3,), (3,)),
+    ('coref', (3,), (2,)),
+    ('coref', (3,), (1,)),
+    ('coref', (2,), (3,)),
+    ('coref', (2,), (2,)),
+    ('coref', (2,), (1,)),
+    ('coref', (1,), (3,)),
+    ('coref', (1,), (2,)),
+    ('coref', (1,), (1,)),
+]
+POSSIBLE_DROP_ACTIONS = [ # TODO Do we need more? Less?
+    ('drop', (3,)),
+    ('drop', (2,)),
+    ('drop', (1,)),
+]
+POSSIBLE_LIFT_ACTIONS = [ # TODO Do we need more? Less?
+    ('lift', (3,)),
+    ('lift', (2,)),
+    ('lift', (1,)),
+]
 
 
 class IllegalActionError(Exception):
@@ -18,21 +90,20 @@ def initial(words):
     """Returns the initial item for the given sentence.
     """
     mr = terms.from_string('answer(_, _)')
-    se = parsestacks.StackElement(mr)
-    stack = lstack.stack((se,))
+    stack = lstack.stack((mr,))
     queue = lstack.stack(words)
     finished = False
-    actions = lstack.stack()
-    return ParseItem(stack, queue, finished, actions)
+    return ParseItem(stack, queue, finished, None, None)
 
 
 class ParseItem:
 
-    def __init__(self, stack, queue, finished, actions):
+    def __init__(self, stack, queue, finished, action, pred):
         self.stack = stack
         self.queue = queue
         self.finished = finished
-        self.actions = actions
+        self.action = action
+        self.pred = pred
 
     def skip(self):
         if not geoquery.skip_allowed(self.queue):
@@ -42,25 +113,28 @@ class ParseItem:
             raise IllegalActionError('cannot skip this word')
         stack = self.stack
         queue = self.queue.pop()
-        return ParseItem(stack, queue, False, self.actions.push(('skip',)))
+        return ParseItem(stack, queue, False, ('skip',), self)
 
     def shift(self, n, term):
-        se = parsestacks.StackElement(term)
-        stack = self.stack.push(se)
+        stack = self.stack.push(term)
         queue = self.queue
         for i in range(n):
             queue = queue.pop()
-        return ParseItem(stack, queue, False, self.actions.push(('shift', n, term.to_string())))
+        return ParseItem(stack, queue, False, ('shift', n, term.to_string()), self)
 
-    def coref(self, i, j, k, l):
-        term1 = self.stack[1].at_secstack_position(i)
-        term0 = self.stack[0].at_secstack_position(k)
-        if not geoquery.coref_allowed(term1, j):
+    def coref(self, address1, address0):
+        term1 = self.stack[1].right_address(address1[:-1])
+        term0 = self.stack[0].left_address(address0[:-1])
+        if not isinstance(term1, terms.ComplexTerm):
+            raise IllegalActionError('can only coref arguments of complex terms')
+        if not isinstance(term0, terms.ComplexTerm):
+            raise IllegalActionError('can only coref arguments of complex terms')
+        if not geoquery.coref_allowed(term1, address1[-1]):
             raise IllegalActionError('cannot coref this argument')
-        if not geoquery.coref_allowed(term0, l):
+        if not geoquery.coref_allowed(term0, address0[-1]):
             raise IllegalActionError('cannot coref this argument')
-        old = term1.args[j - 1]
-        new = term0.args[l - 1]
+        old = term1.args[address1[-1] - 1]
+        new = term0.args[address0[-1] - 1]
         if not isinstance(old, terms.Variable):
             raise IllegalActionError('can only coref variables')
         if not isinstance(new, terms.Variable):
@@ -68,27 +142,51 @@ class ParseItem:
         if old == new:
             raise IllegalActionError('variables already corefed')
         stack = lstack.stack(se.replace(old, new) for se in self.stack)
-        return ParseItem(stack, self.queue, False, self.actions.push(('coref', i, j, k, l)))
+        return ParseItem(stack, self.queue, False, ('coref', address1, address0), self)
 
-    def drop(self, i, j):
+    def drop(self, address):
         stack = self.stack
-        droppee = stack.head.term
+        droppee = stack.head
         stack = stack.pop()
-        se_old = stack.head
+        target_old = stack.head
         stack = stack.pop()
-        se_new = se_old.drop(i, j, droppee)
-        stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, self.actions.push(('drop', i, j)))
+        term = target_old.right_address(address[:-1])
+        if not isinstance(term, terms.ComplexTerm):
+            raise IllegalActionError('can only drop into arguments of complex terms')
+        if not geoquery.integrate_allowed(term, address[-1]):
+            raise IllegalActionError('cannot drop into this argument')
+        arg_old = term.args[-1]
+        if isinstance(arg_old, terms.Variable):
+            arg_new = droppee
+        elif isinstance(arg_old, terms.ConjunctiveTerm):
+            arg_new = terms.ConjunctiveTerm(arg_old.conjuncts + (droppee,))
+        else:
+            arg_new = terms.ConjunctiveTerm((arg_old, droppee))
+        target_new = target_old.replace(arg_old, arg_new)
+        stack = stack.push(target_new)
+        return ParseItem(stack, self.queue, False, ('drop', address), self)
 
-    def lift(self, i, j):
+    def lift(self, address):
         stack = self.stack
-        se_old = stack.head
+        target_old = stack.head
         stack = stack.pop()
-        liftee = stack.head.term
+        liftee = stack.head
         stack = stack.pop()
-        se_new = se_old.lift(i, j, liftee)
-        stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, self.actions.push(('lift', i, j)))
+        term = target_old.left_address(address[:-1])
+        if not isinstance(term, terms.ComplexTerm):
+            raise IllegalActionError('can only lift into arguments of complex terms')
+        if not geoquery.integrate_allowed(term, address[-1]):
+            raise IllegalActionError('cannot lift into this argument')
+        arg_old = term.args[-1]
+        if isinstance(arg_old, terms.Variable):
+            arg_new = liftee
+        elif isinstance(arg_old, terms.ConjunctiveTerm):
+            arg_new = terms.ConjunctiveTerm((liftee,) + arg_old.conjuncts)
+        else:
+            arg_new = terms.ConjunctiveTerm((liftee, arg_old))
+        target_new = target_old.replace(arg_old, arg_new)
+        stack = stack.push(target_new)
+        return ParseItem(stack, self.queue, False, ('lift', address), self)
 
     def finish(self):
         if self.finished:
@@ -97,12 +195,12 @@ class ParseItem:
             raise IllegalActionError('stack size must be 1 to finish')
         if not self.queue.is_empty():
             raise IllegalActionError('queue must be empty to finish')
-        return ParseItem(self.stack, self.queue, True, self.actions.push(('finish',)))
+        return ParseItem(self.stack, self.queue, True, ('finish',), self)
 
     def idle(self):
         if not self.finished:
             raise IllegalActionError('not finished')
-        return ParseItem(self.stack, self.queue, True, self.actions.push(('idle',)))
+        return ParseItem(self.stack, self.queue, True, ('idle',), self)
 
     def successors(self):
         """Returns all possible successors.
@@ -121,28 +219,23 @@ class ParseItem:
             for meaning in lexicon.meanings(token):
                 yield self.shift(token_length, meaning)
         # coref
-        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
-            for j in range(1, MAX_ARGS + 1):
-                for k in range(MAX_SECSTACK_DEPTH, -1, -1):
-                    for l in range(1, MAX_ARGS + 1):
-                        try:
-                            yield self.coref(i, j, k, l)
-                        except (IndexError, IllegalActionError):
-                            continue
+        for _, address1, address0 in POSSIBLE_COREF_ACTIONS:
+            try:
+                yield self.coref(address1, address0)
+            except (IndexError, IllegalActionError):
+                continue
         # drop
-        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
-            for j in range(1, MAX_ARGS + 1):
-                try:
-                    yield self.drop(i, j)
-                except (IndexError, IllegalActionError):
-                    continue
+        for _, address in POSSIBLE_DROP_ACTIONS:
+            try:
+                yield self.drop(address)
+            except (IndexError, IllegalActionError):
+                continue
         # lift
-        for i in range(MAX_SECSTACK_DEPTH, -1, -1):
-            for j in range(1, MAX_ARGS + 1):
-                try:
-                    yield self.lift(i, j)
-                except (IndexError, IllegalActionError):
-                    continue
+        for _, address in POSSIBLE_LIFT_ACTIONS:
+            try:
+                yield self.lift(address)
+            except (IndexError, IllegalActionError):
+                continue
         # finish
         if not self.finished and len(self.stack) == 1 and self.queue.is_empty():
             yield self.finish()
@@ -150,25 +243,27 @@ class ParseItem:
         if self.finished:
             yield self.idle()
 
-    def successor(self, action, *args):
-        if action == 'skip':
-            return self.skip(*args)
-        elif action == 'shift':
-            length, meaning = args
-            meaning = terms.from_string(meaning)
-            return self.shift(length, meaning)
-        elif action == 'coref':
-            return self.coref(*args)
-        elif action == 'drop':
-            return self.drop(*args)
-        elif action == 'lift':
-            return self.lift(*args)
-        elif action == 'finish':
-            return self.finish(*args)
-        elif action == 'idle':
-            return self.idle(*args)
-        else:
-            raise ValueError('invalid action: ' + action)
-
     def action_sequence(self):
-        return list(reversed(self.actions))
+        result = []
+        item = self
+        while item.action is not None:
+            result.insert(0, item.action)
+            item = item.pred
+        return result
+
+    def item_sequence(self):
+        result = []
+        item = self
+        while item is not None:
+            result.insert(0, item)
+            item = item.pred
+        return result
+
+    def __str__(self):
+        stack = []
+        var_name_dict = terms.make_var_name_dict()
+        for term in reversed(self.stack):
+            stack.append(term.to_string(var_name_dict))
+        return 'ParseItem([' + ', '.join(stack) + '], [' + \
+            ', '.join(self.queue) + '], ' + str(self.finished) + ', ' + \
+            str(self.action) + ')'

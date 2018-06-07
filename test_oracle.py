@@ -14,24 +14,28 @@ class OracleTest(unittest.TestCase):
                 ('skip',),
                 ('skip',),
                 ('shift', 1, 'capital(A,B)'),
-                ('coref', 0, 1, 0, 2),
-                ('drop', 0, 2),
+                ('coref', (1,), (2,)),
+                ('drop', (2,)),
                 ('skip',),
                 ('skip',),
                 ('shift', 1, 'state(A)'),
-                ('coref', 1, 1, 0, 1),
+                ('coref', (2, 1), (1,)),
                 ('skip',),
                 ('skip',),
                 ('shift', 1, 'largest(A,B)'),
-                ('lift', 0, 2),
+                ('lift', (2,)),
                 ('shift', 1, 'population(A,B)'),
-                ('coref', 1, 1, 0, 1),
-                ('coref', 0, 1, 0, 2),
-                ('drop', 0, 2),
-                ('drop', 0, 2),
+                ('coref', (2, 1), (1,)),
+                ('coref', (1,), (2,)),
+                ('drop', (2,)),
+                ('drop', (2,)),
                 ('finish',),
         ]
-        actions_oracle = oracle.action_sequence(words, target_mr)
+        item = oracle.first_finished_item(words, target_mr)
+        actions_oracle = item.action_sequence()
+        items_oracle = item.item_sequence()
+        for i in items_oracle:
+            print(i)
         self.assertEqual(actions_gold, actions_oracle)
 
     def test_coverage(self):
@@ -40,4 +44,4 @@ class OracleTest(unittest.TestCase):
         for words, mr in data.geo880_train():
             print(' '.join(words))
             print(mr.to_string())
-            actions = oracle.action_sequence(words, mr)
+            item = oracle.first_finished_item(words, mr)
