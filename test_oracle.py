@@ -1,3 +1,4 @@
+import data
 import oracle
 import terms
 import unittest
@@ -32,3 +33,11 @@ class OracleTest(unittest.TestCase):
         ]
         actions_oracle = oracle.action_sequence(words, target_mr)
         self.assertEqual(actions_gold, actions_oracle)
+
+    def test_coverage(self):
+        """Tests that an action sequence is found for every training example.
+        """
+        for words, mr in data.geo880_train():
+            print(' '.join(words))
+            print(mr.to_string())
+            actions = oracle.action_sequence(words, mr)
