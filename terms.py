@@ -217,6 +217,10 @@ class ConjunctiveTerm(Term):
         if bindings is None:
             bindings = {}
         for conjuncts in util.ngrams(len(self.conjuncts), other.conjuncts):
+            # FIXME This can return False instead of True when other.conjuncts
+            # contains non-complex terms or more than one complex term with
+            # the same functor. However, such conjunctive terms do not exist in
+            # the GeoQuery data (?), so it's fine for now.
             b = dict(bindings) # temporary copy of bindings
             if subsume(self.conjuncts, conjuncts, b):
                 bindings.update(b)
