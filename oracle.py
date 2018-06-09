@@ -19,7 +19,10 @@ def first_finished_item(words, target_mr):
         beam = [s for i in beam for s in i.successors()]
         # Keep only acceptable ones:
         beam = [i for i in beam if accept(i, target_mr)]
+        #print(random.choice(beam))
         # HACK: always do coref/drop/lift before skip
+        # FIXME: this prevents correct items from being found
+        # need more smarts
         if any(i.action[0] in ('shift', 'coref', 'drop', 'lift') for i in beam):
             beam = [i for i in beam if i.action[0] != 'skip']
         # If beam empty, error:
