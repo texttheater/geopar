@@ -123,8 +123,11 @@ class ParseItem:
         return ParseItem(stack, queue, False, ('shift', n, term.to_string()), self)
 
     def coref(self, address1, address0):
-        term1 = self.stack[1].right_address(address1[:-1])
-        term0 = self.stack[0].left_address(address0[:-1])
+        try:
+            term1 = self.stack[1].right_address(address1[:-1])
+            term0 = self.stack[0].left_address(address0[:-1])
+        except terms.AddressError:
+            raise IllegalActionError('no term at that address')
         if not isinstance(term1, terms.ComplexTerm):
             raise IllegalActionError('can only coref arguments of complex terms')
         if not isinstance(term0, terms.ComplexTerm):

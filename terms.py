@@ -59,6 +59,14 @@ def _unquote(quoted_atom):
     return between_part
 
 
+class AddressError(Exception):
+
+    """Signals that no subterm exists at the specified address.
+    """
+
+    pass
+
+
 class Term:
 
     def equivalent(self, other):
@@ -71,11 +79,13 @@ class Term:
         return False
 
     def left_address(self, address):
-        assert len(address) == 0
+        if not len(address) == 0:
+            raise AddressError()
         return self
 
     def right_address(self, address):
-        assert len(address) == 0
+        if not len(address) == 0:
+            raise AddressError()
         return self
 
 
