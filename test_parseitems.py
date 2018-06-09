@@ -75,6 +75,7 @@ class ItemsTestCase(unittest.TestCase):
             ('shift', 1, 'const(A,stateid(oregon))'),
             ('coref', (2, 2, 1), (1,)),
             ('drop', (2, 2,)),
+            ('skip',),
             ('finish',),
             ('idle',),
         ]
