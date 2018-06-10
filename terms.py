@@ -171,7 +171,7 @@ class ComplexTerm(Term):
     def subsumes(self, other, bindings=None):
         if isinstance(other, ConjunctiveTerm):
             for conjunct in other.conjuncts:
-                if self.subsumes(conjunct):
+                if self.subsumes(conjunct, bindings):
                     return True
             return False
         if not isinstance(other, ComplexTerm):
