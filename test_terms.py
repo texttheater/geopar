@@ -102,7 +102,6 @@ class TermsTestCase(unittest.TestCase):
             terms.from_string('answer(A,(capital(B,A),largest(C,(state(A),population(D,E)))))').equivalent(
             terms.from_string('answer(C,(capital(S,C),largest(P,(state(S),population(S,P)))))')))
 
-
     def test_string_roundtrip(self):
         t1 = terms.from_string('a(A, A)')
         t2 = terms.from_string('a(B, B)')
@@ -140,3 +139,17 @@ class TermsTestCase(unittest.TestCase):
         self.assertTrue(s.equivalent(terms.from_string('S')))
         s = t.right_address([2, 2, 2])
         self.assertTrue(s.equivalent(terms.from_string('P')))
+
+    def test_contains_subsumee(self):
+        term1 = terms.from_string('a(city(A), loc(A, B))')
+        term2 = terms.from_string('a(city(C), loc(D, C))')
+        term3 = term2.left_address((1,))
+        term4 = term2.left_address((2,))
+        self.assertTrue(term1.contains_subsumee(term4))
+        self.assertTrue(term1.contains_subsumee(term3))
+        bindings = {}
+        self.assertTrue(term1.contains_subsumee(term4, bindings))
+        self.assertFalse(term1.contains_subsumee(term3, bindings))
+        bindings = {}
+        self.assertTrue(term1.contains_subsumee(term3, bindings))
+        self.assertFalse(term1.contains_subsumee(term4, bindings))
