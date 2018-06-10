@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python3 -ic 'import data; import terms; import lexicon; import parseitems; import parsestacks; import oracle; import geoquery'
+python3 -ic 'import data; import terms; import lexicon; import parseitems; import oracle; import geoquery'
 
