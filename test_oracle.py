@@ -1,5 +1,6 @@
 import data
 import oracle
+import parseitems
 import terms
 import unittest
 
@@ -45,3 +46,21 @@ class OracleTest(unittest.TestCase):
             print(' '.join(words))
             print(mr.to_string())
             item = oracle.first_finished_item(words, mr)
+
+    def test_example2(self):
+        words = ('give', 'me', 'the', 'cities', 'in', 'virginia')
+        target_mr = terms.from_string('answer(A,(city(A),loc(A,B),const(B,stateid(virginia))))')
+        item = parseitems.initial(words)
+        self.assertTrue(oracle.accept(item, target_mr))
+        item = item.skip()
+        self.assertTrue(oracle.accept(item, target_mr))
+        item = item.skip()
+        self.assertTrue(oracle.accept(item, target_mr))
+        item = item.skip()
+        self.assertTrue(oracle.accept(item, target_mr))
+        item = item.shift(1, terms.from_string('city(A)'))
+        self.assertTrue(oracle.accept(item, target_mr))
+        item = item.shift(1, terms.from_string('loc(A,B)'))
+        self.assertTrue(oracle.accept(item, target_mr)) # should maybe not but ok
+        item = item.coref((1,), (2,))
+        self.assertFalse(oracle.accept(item, target_mr))
