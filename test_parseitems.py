@@ -1,4 +1,3 @@
-import oracle
 import parseitems
 import terms
 import unittest
@@ -41,7 +40,6 @@ class ItemsTestCase(unittest.TestCase):
             successors = item.successors()
             action_successor_dict = {s.action: s for s in successors}
             item = action_successor_dict[action]
-            self.assertTrue(oracle.accept(item, target_mr))
         self.assertEqual(len(item.stack), 1)
         self.assertTrue(item.queue.is_empty())
         self.assertTrue(item.finished)
@@ -83,7 +81,6 @@ class ItemsTestCase(unittest.TestCase):
             successors = item.successors()
             action_successor_dict = {s.action: s for s in successors}
             item = action_successor_dict[action]
-            self.assertTrue(oracle.accept(item, target_mr))
         self.assertEqual(len(item.stack), 1)
         self.assertTrue(item.queue.is_empty())
         self.assertTrue(item.finished)
