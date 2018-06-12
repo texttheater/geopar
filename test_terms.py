@@ -47,10 +47,10 @@ class TermsTestCase(unittest.TestCase):
         self.assertFalse(
             terms.from_string('a(X, (b(X), c(X)))').subsumes(
             terms.from_string('a(D, (b(D), C))')))
-        self.assertTrue(
+        self.assertFalse(
             terms.from_string('a(A)').subsumes(
             terms.from_string('(a(A), b(B))')))
-        self.assertTrue(
+        self.assertFalse(
             terms.from_string('(a(A), b(B))').subsumes(
             terms.from_string('(a(A), b(B), c(C))')))
         self.assertFalse(
@@ -139,17 +139,3 @@ class TermsTestCase(unittest.TestCase):
         self.assertTrue(s.equivalent(terms.from_string('S')))
         s = t.right_address([2, 2, 2])
         self.assertTrue(s.equivalent(terms.from_string('P')))
-
-    def test_contains_subsumee(self):
-        term1 = terms.from_string('a(city(A), loc(A, B))')
-        term2 = terms.from_string('a(city(C), loc(D, C))')
-        term3 = term2.left_address((1,))
-        term4 = term2.left_address((2,))
-        self.assertTrue(term1.contains_subsumee(term4))
-        self.assertTrue(term1.contains_subsumee(term3))
-        bindings = {}
-        self.assertTrue(term1.contains_subsumee(term4, bindings))
-        self.assertFalse(term1.contains_subsumee(term3, bindings))
-        bindings = {}
-        self.assertTrue(term1.contains_subsumee(term3, bindings))
-        self.assertFalse(term1.contains_subsumee(term4, bindings))

@@ -72,12 +72,6 @@ class Term:
     def equivalent(self, other):
         return self.subsumes(other) and other.subsumes(self)
 
-    def contains_subsumee(self, other, bindings=None):
-        for subterm in self.subterms():
-            if other.subsumes(subterm, bindings):
-                return True
-        return False
-
     def left_address(self, address):
         if not len(address) == 0:
             raise AddressError()
@@ -169,11 +163,6 @@ class ComplexTerm(Term):
             yield from arg.subterms()
 
     def subsumes(self, other, bindings=None):
-        if isinstance(other, ConjunctiveTerm):
-            for conjunct in other.conjuncts:
-                if self.subsumes(conjunct, bindings):
-                    return True
-            return False
         if not isinstance(other, ComplexTerm):
             return False
         if other.functor_name != self.functor_name:
@@ -222,20 +211,14 @@ class ConjunctiveTerm(Term):
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ConjunctiveTerm):
             return False
-        if len(other.conjuncts) < len(self.conjuncts):
+        if len(other.conjuncts) != len(self.conjuncts):
             return False
         if bindings is None:
             bindings = {}
-        for conjuncts in util.ngrams(len(self.conjuncts), other.conjuncts):
-            # FIXME This can return False instead of True when other.conjuncts
-            # contains non-complex terms or more than one complex term with
-            # the same functor. However, such conjunctive terms do not exist in
-            # the GeoQuery data (?), so it's fine for now.
-            b = dict(bindings) # temporary copy of bindings
-            if subsume(self.conjuncts, conjuncts, b):
-                bindings.update(b)
-                return True
-        return False
+        for a, b in zip(self.conjuncts, other.conjuncts):
+            if not a.subsumes(b, bindings):
+                return False
+        return True
 
     def replace(self, old, new):
         if self == old:
