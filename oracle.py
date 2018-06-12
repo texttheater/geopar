@@ -1,35 +1,45 @@
 import parseitems
-import random
 
 
-def accept(item, target_mr):
-    if item.finished:
-        return item.stack.head.equivalent(target_mr)
-    bindings = {}
-    for term in item.stack:
-        if not target_mr.contains_subsumee(term, bindings):
-            return False
-    return True
+def item_hash(item):
+    return hash(str(item))
 
 
-def first_finished_item(words, target_mr):
-    beam = [parseitems.initial(words)]
-    while True:
-        # Generate successors:
-        beam = [s for i in beam for s in i.successors()]
-        # Keep only acceptable ones:
-        beam = [i for i in beam if accept(i, target_mr)]
-        #print(random.choice(beam))
-        # HACK: always do coref/drop/lift before skip
-        # FIXME: this prevents correct items from being found
-        # need more smarts
-        if any(i.action[0] in ('shift', 'coref', 'drop', 'lift') for i in beam):
-            beam = [i for i in beam if i.action[0] != 'skip']
-        # If beam empty, error:
-        if not beam:
-            raise ValueError('no action sequence found')
-        # Have we found a sequence?
-        for item in beam:
-            if item.finished:
-                return item
+class Rejector:
 
+    def __init__(self, target_mr):
+        self.target_mr = target_mr
+        self.fragments = list(target_mr.fragments())
+
+    def reject(self, item, siblings=None):
+        if item.finished:
+            return not item.stack.head.equivalent(self.target_mr)
+        # TODO enforce consistency across stack elements?
+        for term in item.stack:
+            if not any(term.subsumes_without_identification(f) for f in self.fragments):
+                return True
+        return False
+
+
+def action_sequence(words, target_mr):
+    """Looks for action sequences that lead from words to target_mr.
+
+    Returns the first that it finds.
+    """
+    initial = parseitems.initial(words)
+    hashes = {item_hash(initial)}
+    beam = [initial]
+    rejector = Rejector(target_mr)
+    while any(not item.finished for item in beam):
+        successors = [s for item in beam for s in item.successors()]
+        beam = []
+        for succ in successors:
+            succ_hash = item_hash(succ)
+            if succ_hash not in hashes and not rejector.reject(succ):
+                beam.append(succ)
+                hashes.add(succ_hash)
+    if not beam:
+        raise ValueError('no action sequence found')
+    for item in beam[0].item_sequence():
+        print(item)
+    return beam[0].action_sequence()

@@ -139,3 +139,30 @@ class TermsTestCase(unittest.TestCase):
         self.assertTrue(s.equivalent(terms.from_string('S')))
         s = t.right_address([2, 2, 2])
         self.assertTrue(s.equivalent(terms.from_string('P')))
+
+    def test_fragments1(self):
+        term = terms.from_string('(a,b,c,d,e)')
+        gold = ['a', 'b', 'c', 'd', 'e', '(a,b)', '(a,b,c)', '(a,b,c,d)',
+                '(a,b,c,d,e)', '(b,c,d,e)', '(c,d,e)', '(d,e)']
+        pred = [f.to_string() for f in term.fragments()]
+        self.assertEqual(pred, gold)
+
+    def test_fragments2(self):
+        term = terms.from_string('a(a,(b,c))')
+        gold = ['a', 'b', 'c', '(b,c)', 'a(a,b)', 'a(a,c)', 'a(a,(b,c))']
+        pred = [f.to_string() for f in term.fragments()]
+        self.assertEqual(pred, gold)
+
+    def test_fragments3(self):
+        term = terms.from_string('a(A,(b,c))')
+        gold = ['A', 'b', 'c', '(b,c)', 'a(A,b)', 'a(A,c)', 'a(A,(b,c))']
+        pred = [f.to_string() for f in term.fragments()]
+        self.assertEqual(pred, gold)
+
+    def test_subsumes_without_identification(self):
+        t1 = terms.from_string('a(A,B)')
+        t2 = terms.from_string('a(A,B)')
+        self.assertTrue(t1.subsumes_without_identification(t2))
+        t1 = terms.from_string('a(A,B)')
+        t2 = terms.from_string('a(A,A)')
+        self.assertFalse(t1.subsumes_without_identification(t2))

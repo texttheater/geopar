@@ -270,19 +270,6 @@ class ParseItem:
     def successors(self):
         """Returns all possible successors.
         """
-        # skip
-        try:
-            yield self.skip()
-        except (IndexError, IllegalActionError):
-            pass
-        # shift
-        for token_length in range(1, MAX_TOKEN_LENGTH + 1):
-            try:
-                token = tuple(self.queue[i] for i in range(token_length))
-            except IndexError: # queue too short
-                break
-            for meaning in lexicon.meanings(token):
-                yield self.shift(token_length, meaning)
         # coref
         for _, address1, address0 in POSSIBLE_COREF_ACTIONS:
             try:
@@ -301,6 +288,19 @@ class ParseItem:
                 yield self.lift(address)
             except (IndexError, IllegalActionError):
                 continue
+        # shift
+        for token_length in range(1, MAX_TOKEN_LENGTH + 1):
+            try:
+                token = tuple(self.queue[i] for i in range(token_length))
+            except IndexError: # queue too short
+                break
+            for meaning in lexicon.meanings(token):
+                yield self.shift(token_length, meaning)
+        # skip
+        try:
+            yield self.skip()
+        except (IndexError, IllegalActionError):
+            pass
         # finish
         if not self.finished and len(self.stack) == 1 and self.queue.is_empty():
             yield self.finish()
@@ -332,3 +332,19 @@ class ParseItem:
         return 'ParseItem([' + ', '.join(stack) + '], [' + \
             ', '.join(self.queue) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
+
+    def equivalent(self, other):
+        if not self.queue == other.queue:
+            return False
+        if not self.finished == other.finished:
+            return False
+        if not len(self.stack) == len(other.stack):
+            return False
+        bindings1 = {}
+        bindings2 = {}
+        for a, b in zip(self.stack, other.stack):
+            if not a.subsumes(b, bindings1):
+                return False
+            if not b.subsumes(a, bindings2):
+                return False
+        return True

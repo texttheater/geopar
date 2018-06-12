@@ -72,6 +72,15 @@ class Term:
     def equivalent(self, other):
         return self.subsumes(other) and other.subsumes(self)
 
+    def subsumes_without_identification(self, other):
+        """Check for subsumption without identifying variables within self.
+        """
+        bindings = {}
+        if not self.subsumes(other, bindings):
+            return False
+        # check that no subterm is bound to twice:
+        return len(bindings) == len(set(bindings.values()))
+
     def left_address(self, address):
         if not len(address) == 0:
             raise AddressError()
@@ -91,6 +100,9 @@ class Variable(Term):
         return var_name_dict[self]
 
     def subterms(self):
+        yield self
+
+    def fragments(self):
         yield self
 
     def subsumes(self, other, bindings=None):
@@ -119,6 +131,9 @@ class Atom(Term):
         return "'" + self.name.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
     def subterms(self):
+        yield self
+
+    def fragments(self):
         yield self
 
     def subsumes(self, other, bindings=None):
@@ -161,6 +176,12 @@ class ComplexTerm(Term):
         yield self
         for arg in self.args:
             yield from arg.subterms()
+
+    def fragments(self):
+        for arg in self.args:
+            yield from arg.fragments()
+        for args_fragments in fragments(self.args):
+            yield ComplexTerm(self.functor_name, args_fragments)
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ComplexTerm):
@@ -208,6 +229,16 @@ class ConjunctiveTerm(Term):
         for conjunct in self.conjuncts:
             yield from conjunct.subterms()
 
+    def fragments(self):
+        for conj in self.conjuncts:
+            yield from conj.fragments()
+        for length in range(2, len(self.conjuncts) + 1):
+            for conjuncts_fragments in fragments(self.conjuncts[:length]):
+                yield ConjunctiveTerm(conjuncts_fragments)
+        for start in range(1, len(self.conjuncts) - 1):
+            for conjuncts_fragments in fragments(self.conjuncts[start:]):
+                yield ConjunctiveTerm(conjuncts_fragments)
+
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ConjunctiveTerm):
             return False
@@ -242,6 +273,9 @@ class Number(Term):
         return str(self.number)
 
     def subterms(self):
+        yield self
+
+    def fragments(self):
         yield self
 
     def subsumes(self, other, bindings=None):
@@ -375,10 +409,11 @@ def make_var_name_dict():
     return collections.defaultdict(lambda: next(names))
 
 
-def subsume(terms1, terms2, bindings):
-    """Checks subsumption of two lists of terms.
-    """
-    for term1, term2 in zip(terms1, terms2):
-        if not term1.subsumes(term2, bindings):
-            return False
-    return True
+def fragments(args):
+    if args == ():
+        yield ()
+    else:
+        for f in args[0].fragments():
+            for g in fragments(args[1:]):
+                yield (f,) + g
+
