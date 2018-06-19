@@ -369,7 +369,9 @@ class Beam:
         successors = [s for i in self.items for s in i.successors()]
         self.items = []
         for s in successors:
-            if not (str(s) in self.seen or self.rejector.reject(s)):
+            if (s.action == ('idle',) or str(s) not in self.seen) and \
+                (not self.rejector.reject(s)):
                 self.items.append(s)
                 self.seen.add(str(s))
+        print(len(self.items))
 
