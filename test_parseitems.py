@@ -1,3 +1,4 @@
+import oracle
 import parseitems
 import terms
 import unittest
@@ -46,8 +47,11 @@ class ItemsTestCase(unittest.TestCase):
         self.assertTrue(item.stack.head.equivalent(target_mr))
 
     def test_example2(self):
-        item = parseitems.initial(('could', 'you', 'tell', 'me', 'what', 'is', 'the', 'highest', 'point', 'in', 'the', 'state', 'of', 'oregon', '?'))
+        words = ('could', 'you', 'tell', 'me', 'what', 'is', 'the', 'highest',
+            'point', 'in', 'the', 'state', 'of', 'oregon', '?')
         target_mr = terms.from_string('answer(A,highest(A,(place(A),loc(A,B),state(B),const(B,stateid(oregon)))))')
+        beam = parseitems.Beam(words, target_mr)
+        item = parseitems.initial(words)
         actions = [
             ('skip',),
             ('skip',),
@@ -78,8 +82,8 @@ class ItemsTestCase(unittest.TestCase):
             ('idle',),
         ]
         for action in actions:
-            successors = item.successors()
-            action_successor_dict = {s.action: s for s in successors}
+            beam.advance()
+            action_successor_dict = {i.action: i for i in beam.items}
             item = action_successor_dict[action]
         self.assertEqual(len(item.stack), 1)
         self.assertTrue(item.queue.is_empty())

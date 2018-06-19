@@ -42,3 +42,4 @@ class OracleTest(unittest.TestCase):
             print(' '.join(words))
             print(mr.to_string())
             item = oracle.action_sequence(words, mr)
+            print()

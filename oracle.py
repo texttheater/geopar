@@ -1,8 +1,8 @@
 import parseitems
 
 
-def item_hash(item):
-    return hash(str(item))
+def item_id(item):
+    return str(item)
 
 
 class Rejector:
@@ -26,20 +26,11 @@ def action_sequence(words, target_mr):
 
     Returns the first that it finds.
     """
-    initial = parseitems.initial(words)
-    hashes = {item_hash(initial)}
-    beam = [initial]
-    rejector = Rejector(target_mr)
-    while any(not item.finished for item in beam):
-        successors = [s for item in beam for s in item.successors()]
-        beam = []
-        for succ in successors:
-            succ_hash = item_hash(succ)
-            if succ_hash not in hashes and not rejector.reject(succ):
-                beam.append(succ)
-                hashes.add(succ_hash)
-    if not beam:
+    beam = parseitems.Beam(words, target_mr)
+    while any(not item.finished for item in beam.items):
+        beam.advance()
+    if not beam.items:
         raise ValueError('no action sequence found')
-    for item in beam[0].item_sequence():
+    for item in beam.items[0].item_sequence():
         print(item)
-    return beam[0].action_sequence()
+    return beam.items[0].action_sequence()
