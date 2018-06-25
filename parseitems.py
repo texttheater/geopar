@@ -268,6 +268,23 @@ class ParseItem:
             raise IllegalActionError('not finished')
         return ParseItem(self.stack, self.queue, True, ('idle',), self)
 
+    def successor(self, action):
+        if action[0] == 'skip':
+            return self.skip()
+        if action[0] == 'shift':
+            return self.shift(action[1], terms.from_string(action[2]))
+        if action[0] == 'coref':
+            return self.coref(action[1], action[2])
+        if action[0] == 'drop':
+            return self.drop(action[1])
+        if action[0] == 'lift':
+            return self.lift(action[1])
+        if action[0] == 'finish':
+            return self.finish()
+        if action[0] == 'idle':
+            return self.idle()
+        raise ValueError('unknown action type: ' + action[0])
+
     def successors(self):
         """Returns all possible successors.
         """

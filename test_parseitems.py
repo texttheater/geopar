@@ -89,3 +89,39 @@ class ItemsTestCase(unittest.TestCase):
         self.assertTrue(item.queue.is_empty())
         self.assertTrue(item.finished)
         self.assertTrue(item.stack.head.equivalent(target_mr))
+
+    def test_example3(self):
+        words = ('how', 'many', 'big', 'cities', 'are', 'in', 'pennsylvania', '?')
+        target_mr = terms.from_string('answer(A,count(B,(major(B),city(B),loc(B,C),const(C,stateid(pennsylvania))),A))')
+        item = parseitems.initial(words)
+        rejector = oracle.Rejector(target_mr)
+        self.assertFalse(rejector.reject(item))
+        actions = [
+            ('skip',),
+            ('shift', 1, 'count(A,B,C)'),
+            ('coref', (1,), (3,)),
+            ('drop', (2,)),
+            ('shift', 1, 'major(A)'),
+            ('coref', (2, 1), (1,)),
+            ('drop', (2, 2)),
+            ('shift', 1, 'city(A)'),
+            ('coref', (2, 2, 1), (1,)),
+            ('drop', (2, 2)),
+            ('skip',),
+            ('shift', 1, 'loc(A,B)'),
+            ('coref', (2, 2, 1), (1,)),
+            ('drop', (2, 2)),
+            ('shift', 1, 'const(A,stateid(pennsylvania))'),
+            ('coref', (2, 2, 2), (1,)),
+            ('drop', (2, 2)),
+            ('skip',),
+            ('finish',),
+            ('idle',)
+        ]
+        for action in actions:
+            item = item.successor(action)
+            self.assertFalse(rejector.reject(item))
+        self.assertEqual(len(item.stack), 1)
+        self.assertTrue(item.queue.is_empty())
+        self.assertTrue(item.finished)
+        self.assertTrue(item.stack.head.equivalent(target_mr))
