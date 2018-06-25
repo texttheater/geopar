@@ -221,7 +221,7 @@ class ParseItem:
             raise IllegalActionError('can only drop into arguments of complex terms')
         if not geoquery.integrate_allowed(term, address[-1]):
             raise IllegalActionError('cannot drop into this argument')
-        arg_old = term.args[-1]
+        arg_old = term.args[address[-1] - 1]
         if isinstance(arg_old, terms.Variable):
             arg_new = droppee
         elif isinstance(arg_old, terms.ConjunctiveTerm):
@@ -243,7 +243,7 @@ class ParseItem:
             raise IllegalActionError('can only lift into arguments of complex terms')
         if not geoquery.integrate_allowed(term, address[-1]):
             raise IllegalActionError('cannot lift into this argument')
-        arg_old = term.args[-1]
+        arg_old = term.args[address[-1] - 1]
         if isinstance(arg_old, terms.Variable):
             arg_new = liftee
         elif isinstance(arg_old, terms.ConjunctiveTerm):
