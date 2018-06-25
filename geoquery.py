@@ -29,13 +29,4 @@ def integrate_allowed(term, arg_num):
 
 
 def skip_allowed(queue):
-    if queue.head in ('is', 'of', 'with'):
-        return True
-    for token_length in range(1, parseitems.MAX_TOKEN_LENGTH + 1):
-        try:
-            token = tuple(queue[i] for i in range(token_length))
-        except IndexError:
-            break
-        if lexicon.meanings(token):
-            return False
     return True
