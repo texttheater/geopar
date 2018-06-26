@@ -366,29 +366,3 @@ class ParseItem:
             if not b.subsumes(a, bindings2):
                 return False
         return True
-
-
-class Beam:
-
-    def __init__(self, words, target_mr):
-        ini = initial(words)
-        self.items = [ini]
-        self.seen = {str(ini)}
-        self.rejector = oracle.Rejector(target_mr)
-
-    def advance(self):
-        """Destructively advances the beam to the next generation of items.
-
-        Items that are equivalent to items already seen in a previous
-        generation will not be part of the new generation. Nor will items that
-        are rejected by the oracle.
-        """
-        successors = [s for i in self.items for s in i.successors()]
-        self.items = []
-        for s in successors:
-            if (s.action == ('idle',) or str(s) not in self.seen) and \
-                (not self.rejector.reject(s)):
-                self.items.append(s)
-                self.seen.add(str(s))
-        print(len(self.items))
-
