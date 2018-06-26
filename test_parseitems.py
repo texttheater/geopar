@@ -7,13 +7,7 @@ import unittest
 class ItemsTestCase(unittest.TestCase):
 
     def test_example1(self):
-        """Tests the successor(s) methods.
-
-        Same as above, but this time we generate all items using the successors
-        method and make sure that it generates all the correction actions/items.
-        """
-        item = parseitems.initial(('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population'))
-        target_mr = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
+        words = ('what', 'is', 'the', 'capital', 'of', 'the', 'state', 'with', 'the', 'largest', 'population')
         actions = [
             ('skip',),
             ('skip',),
@@ -37,21 +31,12 @@ class ItemsTestCase(unittest.TestCase):
             ('finish',),
             ('idle',)
         ]
-        for action in actions:
-            successors = item.successors()
-            action_successor_dict = {s.action: s for s in successors}
-            item = action_successor_dict[action]
-        self.assertEqual(len(item.stack), 1)
-        self.assertTrue(item.queue.is_empty())
-        self.assertTrue(item.finished)
-        self.assertTrue(item.stack.head.equivalent(target_mr))
+        target_mr = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
+        self._test_action_sequence(words, actions, target_mr)
 
     def test_example2(self):
         words = ('could', 'you', 'tell', 'me', 'what', 'is', 'the', 'highest',
             'point', 'in', 'the', 'state', 'of', 'oregon', '?')
-        target_mr = terms.from_string('answer(A,highest(A,(place(A),loc(A,B),state(B),const(B,stateid(oregon)))))')
-        beam = parseitems.Beam(words, target_mr)
-        item = parseitems.initial(words)
         actions = [
             ('skip',),
             ('skip',),
@@ -81,21 +66,11 @@ class ItemsTestCase(unittest.TestCase):
             ('finish',),
             ('idle',),
         ]
-        for action in actions:
-            beam.advance()
-            action_successor_dict = {i.action: i for i in beam.items}
-            item = action_successor_dict[action]
-        self.assertEqual(len(item.stack), 1)
-        self.assertTrue(item.queue.is_empty())
-        self.assertTrue(item.finished)
-        self.assertTrue(item.stack.head.equivalent(target_mr))
+        target_mr = terms.from_string('answer(A,highest(A,(place(A),loc(A,B),state(B),const(B,stateid(oregon)))))')
+        self._test_action_sequence(words, actions, target_mr)
 
     def test_example3(self):
         words = ('how', 'many', 'big', 'cities', 'are', 'in', 'pennsylvania', '?')
-        target_mr = terms.from_string('answer(A,count(B,(major(B),city(B),loc(B,C),const(C,stateid(pennsylvania))),A))')
-        item = parseitems.initial(words)
-        rejector = oracle.Rejector(target_mr)
-        self.assertFalse(rejector.reject(item))
         actions = [
             ('skip',),
             ('shift', 1, 'count(A,B,C)'),
@@ -118,10 +93,21 @@ class ItemsTestCase(unittest.TestCase):
             ('finish',),
             ('idle',)
         ]
+        target_mr = terms.from_string('answer(A,count(B,(major(B),city(B),loc(B,C),const(C,stateid(pennsylvania))),A))')
+        self._test_action_sequence(words, actions, target_mr)
+
+    def _test_action_sequence(self, words, actions, target_mr):
+        """Tests that the given action sequence is found.
+
+        Tests that given the words and target_mr, the given actions are found
+        and allowed by the oracle.
+        """
+        item = parseitems.initial(words)
+        rejector = oracle.Rejector(target_mr)
         for action in actions:
-            item = item.successor(action)
-            self.assertFalse(rejector.reject(item))
-        self.assertEqual(len(item.stack), 1)
-        self.assertTrue(item.queue.is_empty())
-        self.assertTrue(item.finished)
-        self.assertTrue(item.stack.head.equivalent(target_mr))
+            successors = item.successors()
+            successors = [s for s in successors if s.action == action]
+            self.assertTrue(successors, '{} not applied to {}'.format(action, item))
+            self.assertEqual(len(successors), 1)
+            item = successors[0]
+            self.assertFalse(rejector.reject(item), '{} rejected'.format(item))
