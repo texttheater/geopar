@@ -29,7 +29,7 @@ class ItemsTestCase(unittest.TestCase):
             ('drop', (2,)),
             ('drop', (2,)),
             ('finish',),
-            ('idle',)
+            ('idle',),
         ]
         target_mr = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
         self._test_action_sequence(words, actions, target_mr)
@@ -91,7 +91,7 @@ class ItemsTestCase(unittest.TestCase):
             ('drop', (2, 2)),
             ('skip',),
             ('finish',),
-            ('idle',)
+            ('idle',),
         ]
         target_mr = terms.from_string('answer(A,count(B,(major(B),city(B),loc(B,C),const(C,stateid(pennsylvania))),A))')
         self._test_action_sequence(words, actions, target_mr)
