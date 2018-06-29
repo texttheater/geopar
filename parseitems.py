@@ -483,7 +483,10 @@ class ParseItem:
         stack = stack.pop()
         target_old = stack.head
         stack = stack.pop()
-        term = target_old.right_address(address[:-1])
+        try:
+            term = target_old.right_address(address[:-1])
+        except terms.AddressError:
+            raise IllegalActionError('no term at that address')
         if not isinstance(term, terms.ComplexTerm):
             raise IllegalActionError('can only drop into arguments of complex terms')
         if not geoquery.integrate_allowed(term, address[-1]):
@@ -505,7 +508,10 @@ class ParseItem:
         stack = stack.pop()
         liftee = stack.head
         stack = stack.pop()
-        term = target_old.left_address(address[:-1])
+        try:
+            term = target_old.left_address(address[:-1])
+        except terms.AddressError:
+            raise IllegalActionError('no term at that address')
         if not isinstance(term, terms.ComplexTerm):
             raise IllegalActionError('can only lift into arguments of complex terms')
         if not geoquery.integrate_allowed(term, address[-1]):
