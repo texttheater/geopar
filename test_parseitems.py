@@ -142,6 +142,7 @@ class ItemsTestCase(unittest.TestCase):
         item = parseitems.initial(words)
         rejector = oracle.Rejector(target_mr)
         for action in actions:
+            item.successor(action)
             successors = item.successors()
             successors = [s for s in successors if s.action == action]
             self.assertTrue(successors, '{} not applied to {}'.format(action, item))
