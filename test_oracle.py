@@ -35,6 +35,11 @@ class OracleTest(unittest.TestCase):
         actions_oracle = oracle.action_sequence(words, target_mr)
         self.assertEqual(actions_gold, actions_oracle)
 
+    def test_example2(self):
+        words = ('how', 'many', 'rivers', 'do', 'not', 'traverse', 'the', 'state', 'with', 'the', 'capital', 'albany', '?')
+        target_mr = terms.from_string('answer(A,count(B,(river(B),\+ (traverse(B,C),state(C),loc(D,C),capital(D),const(D,cityid(albany,_)))),A))')
+        oracle.action_sequence(words, target_mr)
+
     def test_coverage(self):
         """Tests that an action sequence is found for every training example.
         """
