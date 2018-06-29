@@ -149,3 +149,4 @@ class ItemsTestCase(unittest.TestCase):
             self.assertEqual(len(successors), 1)
             item = successors[0]
             self.assertFalse(rejector.reject(item), '{} rejected'.format(item))
+        self.assertTrue(item.finished)
