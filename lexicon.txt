@@ -35,7 +35,7 @@ place(_) point
 place(_) points
 place(_) spot
 
-TYPE-PROPERTY METONYMY
+# TYPE-PROPERTY METONYMY
 place(_) elevation
 
 # PREDICATES
@@ -91,6 +91,7 @@ traverse(_,_) though
 traverse(_,_) through
 traverse(_,_) traverses
 traverse(_,_) traversed
+traverse(_,_) traverse
 traverse(_,_) washed
 traverse(_,_) with
 
@@ -179,393 +180,375 @@ const(_,stateid(wisconsin)) wisconsin
 const(_,stateid(wyoming)) wyoming
 
 # CITIES (WITHOUT STATE)
-const(_,cityid(birmingham,_)) birmingham
-const(_,cityid(mobile,_)) mobile
-const(_,cityid(montgomery,_)) montgomery
-const(_,cityid(huntsville,_)) huntsville
-const(_,cityid(tuscaloosa,_)) tuscaloosa
-const(_,cityid(anchorage,_)) anchorage
-const(_,cityid(phoenix,_)) phoenix
-const(_,cityid(tucson,_)) tucson
-const(_,cityid(mesa,_)) mesa
-const(_,cityid(tempe,_)) tempe
-const(_,cityid(glendale,_)) glendale
-const(_,cityid(scottsdale,_)) scottsdale
-const(_,cityid('little rock',_)) little,rock
+const(_,cityid('ann arbor',_)) ann,arbor
+const(_,cityid('arlington heights',_)) arlington,heights
+const(_,cityid('baton rouge',_)) baton,rouge
+const(_,cityid('bristol township',_)) bristol,township
+const(_,cityid('buena park',_)) buena,park
+const(_,cityid('cedar rapids',_)) cedar,rapids
+const(_,cityid('cherry hill',_)) cherry,hill
+const(_,cityid('chula vista',_)) chula,vista
+const(_,cityid('citrus heights',_)) citrus,heights
+const(_,cityid('colorado springs',_)) colorado,springs
+const(_,cityid('corpus christi',_)) corpus,christi
+const(_,cityid('costa mesa',_)) costa,mesa
+const(_,cityid('daly city',_)) daly,city
+const(_,cityid('dearborn heights',_)) dearborn,heights
+const(_,cityid('des moines',_)) des,moines
+const(_,cityid('east los angeles',_)) east,los,angeles
+const(_,cityid('east orange',_)) east,orange
+const(_,cityid('el cajon',_)) el,cajon
+const(_,cityid('el monte',_)) el,monte
+const(_,cityid('el paso',_)) el,paso
+const(_,cityid('fall river',_)) fall,river
+const(_,cityid('farmington hills',_)) farmington,hills
+const(_,cityid('fort collins',_)) fort,collins
+const(_,cityid('fort lauderdale',_)) fort,lauderdale
 const(_,cityid('fort smith',_)) fort,smith
-const(_,cityid('north little rock',_)) north,little,rock
+const(_,cityid('fort wayne',_)) fort,wayne
+const(_,cityid('fort worth',_)) fort,worth
+const(_,cityid('garden grove',_)) garden,grove
+const(_,cityid('grand prairie',_)) grand,prairie
+const(_,cityid('grand rapids',_)) grand,rapids
+const(_,cityid('great falls',_)) great,falls
+const(_,cityid('green bay',_)) green,bay
+const(_,cityid('high point',_)) high,point
+const(_,cityid('huntington beach',_)) huntington,beach
+const(_,cityid('jersey city',_)) jersey,city
+const(_,cityid('kansas city',_)) kansas,city
+const(_,cityid('lake charles',_)) lake,charles
+const(_,cityid('las vegas',_)) las,vegas
+const(_,cityid('little rock',_)) little,rock
+const(_,cityid('long beach',_)) long,beach
 const(_,cityid('los angeles',_)) los,angeles
+const(_,cityid('lower merion',_)) lower,merion
+const(_,cityid('miami beach',_)) miami,beach
+const(_,cityid('mount vernon',_)) mount,vernon
+const(_,cityid('mountain view',_)) mountain,view
+const(_,cityid('new bedford',_)) new,bedford
+const(_,cityid('new britain',_)) new,britain
+const(_,cityid('new haven',_)) new,haven
+const(_,cityid('new orleans',_)) new,orleans
+const(_,cityid('new rochelle',_)) new,rochelle
+const(_,cityid('new york',_)) new,york
+const(_,cityid('newport beach',_)) newport,beach
+const(_,cityid('newport news',_)) newport,news
+const(_,cityid('niagara falls',_)) niagara,falls
+const(_,cityid('north charleston',_)) north,charleston
+const(_,cityid('north little rock',_)) north,little,rock
+const(_,cityid('oak lawn',_)) oak,lawn
+const(_,cityid('oklahoma city',_)) oklahoma,city
+const(_,cityid('overland park',_)) overland,park
+const(_,cityid('penn hills',_)) penn,hills
+const(_,cityid('port arthur',_)) port,arthur
+const(_,cityid('redondo beach',_)) redondo,beach
+const(_,cityid('royal oak',_)) royal,oak
+const(_,cityid('salt lake city',_)) salt,lake,city
+const(_,cityid('san angelo',_)) san,angelo
+const(_,cityid('san antonio',_)) san,antonio
+const(_,cityid('san bernardino',_)) san,bernardino
 const(_,cityid('san diego',_)) san,diego
 const(_,cityid('san francisco',_)) san,francisco
 const(_,cityid('san jose',_)) san,jose
-const(_,cityid('long beach',_)) long,beach
-const(_,cityid(oakland,_)) oakland
-const(_,cityid(sacramento,_)) sacramento
-const(_,cityid(anaheim,_)) anaheim
-const(_,cityid(fresno,_)) fresno
-const(_,cityid('santa ana',_)) santa,ana
-const(_,cityid(riverside,_)) riverside
-const(_,cityid('huntington beach',_)) huntington,beach
-const(_,cityid(stockton,_)) stockton
-const(_,cityid(glendale,_)) glendale
-const(_,cityid(fremont,_)) fremont
-const(_,cityid(torrance,_)) torrance
-const(_,cityid('garden grove',_)) garden,grove
-const(_,cityid('san bernardino',_)) san,bernardino
-const(_,cityid(pasadena,_)) pasadena
-const(_,cityid('east los angeles',_)) east,los,angeles
-const(_,cityid(oxnard,_)) oxnard
-const(_,cityid(modesto,_)) modesto
-const(_,cityid(sunnyvale,_)) sunnyvale
-const(_,cityid(bakersfield,_)) bakersfield
-const(_,cityid(concord,_)) concord
-const(_,cityid(berkeley,_)) berkeley
-const(_,cityid(fullerton,_)) fullerton
-const(_,cityid(inglewood,_)) inglewood
-const(_,cityid(hayward,_)) hayward
-const(_,cityid(pomona,_)) pomona
-const(_,cityid(orange,_)) orange
-const(_,cityid(ontario,_)) ontario
-const(_,cityid('santa monica',_)) santa,monica
-const(_,cityid('santa clara',_)) santa,clara
-const(_,cityid('citrus heights',_)) citrus,heights
-const(_,cityid(norwalk,_)) norwalk
-const(_,cityid(burbank,_)) burbank
-const(_,cityid('chula vista',_)) chula,vista
-const(_,cityid('santa rosa',_)) santa,rosa
-const(_,cityid(downey,_)) downey
-const(_,cityid('costa mesa',_)) costa,mesa
-const(_,cityid(compton,_)) compton
-const(_,cityid(carson,_)) carson
-const(_,cityid(salinas,_)) salinas
-const(_,cityid('west covina',_)) west,covina
-const(_,cityid(vallejo,_)) vallejo
-const(_,cityid('el monte',_)) el,monte
-const(_,cityid('daly city',_)) daly,city
-const(_,cityid('thousand oaks',_)) thousand,oaks
+const(_,cityid('san leandro',_)) san,leandro
 const(_,cityid('san mateo',_)) san,mateo
-const(_,cityid('simi valley',_)) simi,valley
-const(_,cityid(oceanside,_)) oceanside
-const(_,cityid(richmond,_)) richmond
-const(_,cityid(lakewood,_)) lakewood
+const(_,cityid('santa ana',_)) santa,ana
 const(_,cityid('santa barbara',_)) santa,barbara
-const(_,cityid('el cajon',_)) el,cajon
+const(_,cityid('santa clara',_)) santa,clara
+const(_,cityid('santa monica',_)) santa,monica
+const(_,cityid('santa rosa',_)) santa,rosa
+const(_,cityid('scotts valley',_)) scotts,valley
+const(_,cityid('silver spring',_)) silver,spring
+const(_,cityid('simi valley',_)) simi,valley
+const(_,cityid('sioux city',_)) sioux,city
+const(_,cityid('sioux falls',_)) sioux,falls
+const(_,cityid('south bend',_)) south,bend
+const(_,cityid('south gate',_)) south,gate
+const(_,cityid('st. clair shores',_)) st.,clair,shores
+const(_,cityid('st. joseph',_)) st.,joseph
+const(_,cityid('st. louis',_)) st.,louis
+const(_,cityid('st. paul',_)) st.,paul
+const(_,cityid('st. petersburg',_)) st.,petersburg
+const(_,cityid('sterling heights',_)) sterling,heights
+const(_,cityid('terre haute',_)) terre,haute
+const(_,cityid('thousand oaks',_)) thousand,oaks
+const(_,cityid('upper darby',_)) upper,darby
+const(_,cityid('virginia beach',_)) virginia,beach
+const(_,cityid('west allis',_)) west,allis
+const(_,cityid('west covina',_)) west,covina
+const(_,cityid('west hartford',_)) west,hartford
+const(_,cityid('west palm beach',_)) west,palm,beach
+const(_,cityid('west valley',_)) west,valley
+const(_,cityid('wichita falls',_)) wichita,falls
+const(_,cityid(abilene,_)) abilene
+const(_,cityid(abingdon,_)) abingdon
+const(_,cityid(akron,_)) akron
+const(_,cityid(alameda,_)) alameda
+const(_,cityid(albany,_)) albany
+const(_,cityid(albuquerque,_)) albuquerque
+const(_,cityid(alexandria,_)) alexandria
+const(_,cityid(alhambra,_)) alhambra
+const(_,cityid(allentown,_)) allentown
+const(_,cityid(altoona,_)) altoona
+const(_,cityid(amarillo,_)) amarillo
+const(_,cityid(anaheim,_)) anaheim
+const(_,cityid(anchorage,_)) anchorage
+const(_,cityid(anderson,_)) anderson
+const(_,cityid(appleton,_)) appleton
+const(_,cityid(arlington,_)) arlington
+const(_,cityid(arvada,_)) arvada
+const(_,cityid(atlanta,_)) atlanta
+const(_,cityid(aurora,_)) aurora
+const(_,cityid(austin,_)) austin
+const(_,cityid(bakersfield,_)) bakersfield
+const(_,cityid(baltimore,_)) baltimore
+const(_,cityid(bayonne,_)) bayonne
+const(_,cityid(beaumont,_)) beaumont
+const(_,cityid(bellevue,_)) bellevue
+const(_,cityid(berkeley,_)) berkeley
+const(_,cityid(bethesda,_)) bethesda
+const(_,cityid(bethlehem,_)) bethlehem
+const(_,cityid(billings,_)) billings
+const(_,cityid(birmingham,_)) birmingham
+const(_,cityid(bloomington,_)) bloomington
+const(_,cityid(boise,_)) boise
+const(_,cityid(boston,_)) boston
+const(_,cityid(boulder,_)) boulder
+const(_,cityid(bridgeport,_)) bridgeport
+const(_,cityid(bristol,_)) bristol
+const(_,cityid(brockton,_)) brockton
+const(_,cityid(brownsville,_)) brownsville
+const(_,cityid(buffalo,_)) buffalo
+const(_,cityid(burbank,_)) burbank
+const(_,cityid(cambridge,_)) cambridge
+const(_,cityid(camden,_)) camden
+const(_,cityid(canton,_)) canton
+const(_,cityid(carson,_)) carson
+const(_,cityid(casper,_)) casper
+const(_,cityid(champaign,_)) champaign
+const(_,cityid(charleston,_)) charleston
+const(_,cityid(charlotte,_)) charlotte
+const(_,cityid(chattanooga,_)) chattanooga
+const(_,cityid(cheektowaga,_)) cheektowaga
+const(_,cityid(chesapeake,_)) chesapeake
+const(_,cityid(chicago,_)) chicago
+const(_,cityid(cicero,_)) cicero
+const(_,cityid(cincinnati,_)) cincinnati
+const(_,cityid(clearwater,_)) clearwater
+const(_,cityid(cleveland,_)) cleveland
+const(_,cityid(clifton,_)) clifton
+const(_,cityid(clinton,_)) clinton
+const(_,cityid(columbia,_)) columbia
+const(_,cityid(columbus,_)) columbus
+const(_,cityid(compton,_)) compton
+const(_,cityid(concord,_)) concord
+const(_,cityid(cranston,_)) cranston
+const(_,cityid(dallas,_)) dallas
+const(_,cityid(danbury,_)) danbury
+const(_,cityid(davenport,_)) davenport
+const(_,cityid(dayton,_)) dayton
+const(_,cityid(dearborn,_)) dearborn
+const(_,cityid(decatur,_)) decatur
+const(_,cityid(denver,_)) denver
+const(_,cityid(detroit,_)) detroit
+const(_,cityid(dover,_)) dover
+const(_,cityid(downey,_)) downey
+const(_,cityid(dubuque,_)) dubuque
+const(_,cityid(duluth,_)) duluth
+const(_,cityid(dundalk,_)) dundalk
+const(_,cityid(durham,_)) durham
+const(_,cityid(edison,_)) edison
+const(_,cityid(elgin,_)) elgin
+const(_,cityid(elizabeth,_)) elizabeth
+const(_,cityid(elyria,_)) elyria
+const(_,cityid(erie,_)) erie
+const(_,cityid(escondido,_)) escondido
+const(_,cityid(euclid,_)) euclid
+const(_,cityid(eugene,_)) eugene
+const(_,cityid(evanston,_)) evanston
+const(_,cityid(evansville,_)) evansville
+const(_,cityid(ewa,_)) ewa
+const(_,cityid(fairfield,_)) fairfield
+const(_,cityid(fargo,_)) fargo
+const(_,cityid(fayetteville,_)) fayetteville
+const(_,cityid(flint,_)) flint
+const(_,cityid(framingham,_)) framingham
+const(_,cityid(fremont,_)) fremont
+const(_,cityid(fresno,_)) fresno
+const(_,cityid(fullerton,_)) fullerton
+const(_,cityid(gainesville,_)) gainesville
+const(_,cityid(garland,_)) garland
+const(_,cityid(gary,_)) gary
+const(_,cityid(glendale,_)) glendale
+const(_,cityid(greensboro,_)) greensboro
+const(_,cityid(greenville,_)) greenville
+const(_,cityid(greenwich,_)) greenwich
+const(_,cityid(hamilton,_)) hamilton
+const(_,cityid(hammond,_)) hammond
+const(_,cityid(hampton,_)) hampton
+const(_,cityid(hartford,_)) hartford
+const(_,cityid(hayward,_)) hayward
+const(_,cityid(hollywood,_)) hollywood
+const(_,cityid(honolulu,_)) honolulu
+const(_,cityid(houston,_)) houston
+const(_,cityid(huntington,_)) huntington
+const(_,cityid(huntsville,_)) huntsville
+const(_,cityid(independence,_)) independence
+const(_,cityid(indianapolis,_)) indianapolis
+const(_,cityid(inglewood,_)) inglewood
+const(_,cityid(irondequoit,_)) irondequoit
+const(_,cityid(irvine,_)) irvine
+const(_,cityid(irving,_)) irving
+const(_,cityid(irvington,_)) irvington
+const(_,cityid(jackson,_)) jackson
+const(_,cityid(jacksonville,_)) jacksonville
+const(_,cityid(joliet,_)) joliet
+const(_,cityid(kalamazoo,_)) kalamazoo
+const(_,cityid(kendall,_)) kendall
+const(_,cityid(kenner,_)) kenner
+const(_,cityid(kenosha,_)) kenosha
+const(_,cityid(kettering,_)) kettering
+const(_,cityid(knoxville,_)) knoxville
+const(_,cityid(koolaupoko,_)) koolaupoko
+const(_,cityid(lafayette,_)) lafayette
+const(_,cityid(lakewood,_)) lakewood
+const(_,cityid(lansing,_)) lansing
+const(_,cityid(laredo,_)) laredo
+const(_,cityid(largo,_)) largo
+const(_,cityid(lawrence,_)) lawrence
+const(_,cityid(lawton,_)) lawton
+const(_,cityid(levittown,_)) levittown
+const(_,cityid(lexington,_)) lexington
+const(_,cityid(lincoln,_)) lincoln
+const(_,cityid(livonia,_)) livonia
+const(_,cityid(longview,_)) longview
+const(_,cityid(lorain,_)) lorain
+const(_,cityid(louisville,_)) louisville
+const(_,cityid(lowell,_)) lowell
+const(_,cityid(lubbock,_)) lubbock
+const(_,cityid(lynchburg,_)) lynchburg
+const(_,cityid(lynn,_)) lynn
+const(_,cityid(macon,_)) macon
+const(_,cityid(madison,_)) madison
+const(_,cityid(manchester,_)) manchester
+const(_,cityid(mcallen,_)) mcallen
+const(_,cityid(medford,_)) medford
+const(_,cityid(memphis,_)) memphis
+const(_,cityid(meriden,_)) meriden
+const(_,cityid(mesa,_)) mesa
+const(_,cityid(mesquite,_)) mesquite
+const(_,cityid(metairie,_)) metairie
+const(_,cityid(miami,_)) miami
+const(_,cityid(middletown,_)) middletown
+const(_,cityid(midland,_)) midland
+const(_,cityid(milwaukee,_)) milwaukee
+const(_,cityid(minneapolis,_)) minneapolis
+const(_,cityid(mobile,_)) mobile
+const(_,cityid(modesto,_)) modesto
+const(_,cityid(monroe,_)) monroe
+const(_,cityid(montgomery,_)) montgomery
+const(_,cityid(muncie,_)) muncie
+const(_,cityid(nashua,_)) nashua
+const(_,cityid(nashville,_)) nashville
+const(_,cityid(newark,_)) newark
+const(_,cityid(newton,_)) newton
+const(_,cityid(norfolk,_)) norfolk
+const(_,cityid(norman,_)) norman
+const(_,cityid(norwalk,_)) norwalk
+const(_,cityid(oakland,_)) oakland
+const(_,cityid(oceanside,_)) oceanside
+const(_,cityid(odessa,_)) odessa
+const(_,cityid(ogden,_)) ogden
+const(_,cityid(omaha,_)) omaha
+const(_,cityid(ontario,_)) ontario
+const(_,cityid(orange,_)) orange
+const(_,cityid(orlando,_)) orlando
+const(_,cityid(oxnard,_)) oxnard
+const(_,cityid(parma,_)) parma
+const(_,cityid(pasadena,_)) pasadena
+const(_,cityid(paterson,_)) paterson
+const(_,cityid(pawtucket,_)) pawtucket
+const(_,cityid(pensacola,_)) pensacola
+const(_,cityid(peoria,_)) peoria
+const(_,cityid(philadelphia,_)) philadelphia
+const(_,cityid(phoenix,_)) phoenix
+const(_,cityid(pittsburgh,_)) pittsburgh
+const(_,cityid(plano,_)) plano
+const(_,cityid(pomona,_)) pomona
+const(_,cityid(pontiac,_)) pontiac
+const(_,cityid(portland,_)) portland
+const(_,cityid(portsmouth,_)) portsmouth
+const(_,cityid(providence,_)) providence
+const(_,cityid(provo,_)) provo
+const(_,cityid(pueblo,_)) pueblo
+const(_,cityid(quincy,_)) quincy
+const(_,cityid(racine,_)) racine
+const(_,cityid(raleigh,_)) raleigh
+const(_,cityid(reading,_)) reading
+const(_,cityid(redford,_)) redford
+const(_,cityid(reno,_)) reno
+const(_,cityid(richardson,_)) richardson
+const(_,cityid(richmond,_)) richmond
+const(_,cityid(riverside,_)) riverside
+const(_,cityid(roanoke,_)) roanoke
+const(_,cityid(rochester,_)) rochester
+const(_,cityid(rockford,_)) rockford
+const(_,cityid(sacramento,_)) sacramento
+const(_,cityid(saginaw,_)) saginaw
+const(_,cityid(salem,_)) salem
+const(_,cityid(salinas,_)) salinas
+const(_,cityid(savannah,_)) savannah
+const(_,cityid(schenectady,_)) schenectady
+const(_,cityid(scottsdale,_)) scottsdale
+const(_,cityid(scranton,_)) scranton
+const(_,cityid(seattle,_)) seattle
+const(_,cityid(shreveport,_)) shreveport
+const(_,cityid(skokie,_)) skokie
+const(_,cityid(somerville,_)) somerville
+const(_,cityid(southfield,_)) southfield
+const(_,cityid(spokane,_)) spokane
+const(_,cityid(springfield,_)) springfield
+const(_,cityid(stamford,_)) stamford
+const(_,cityid(stockton,_)) stockton
+const(_,cityid(sunnyvale,_)) sunnyvale
+const(_,cityid(syracuse,_)) syracuse
+const(_,cityid(tacoma,_)) tacoma
+const(_,cityid(tallahassee,_)) tallahassee
+const(_,cityid(tampa,_)) tampa
+const(_,cityid(taylor,_)) taylor
+const(_,cityid(tempe,_)) tempe
+const(_,cityid(toledo,_)) toledo
+const(_,cityid(topeka,_)) topeka
+const(_,cityid(torrance,_)) torrance
+const(_,cityid(trenton,_)) trenton
+const(_,cityid(troy,_)) troy
+const(_,cityid(tucson,_)) tucson
+const(_,cityid(tulsa,_)) tulsa
+const(_,cityid(tuscaloosa,_)) tuscaloosa
+const(_,cityid(tyler,_)) tyler
+const(_,cityid(utica,_)) utica
+const(_,cityid(vallejo,_)) vallejo
 const(_,cityid(ventura,_)) ventura
+const(_,cityid(waco,_)) waco
+const(_,cityid(waltham,_)) waltham
+const(_,cityid(warren,_)) warren
+const(_,cityid(warwick,_)) warwick
+const(_,cityid(washington,_)) washington
+const(_,cityid(waterbury,_)) waterbury
+const(_,cityid(waterford,_)) waterford
+const(_,cityid(waterloo,_)) waterloo
+const(_,cityid(waukegan,_)) waukegan
+const(_,cityid(westland,_)) westland
 const(_,cityid(westminster,_)) westminster
 const(_,cityid(whittier,_)) whittier
-const(_,cityid('south gate',_)) south,gate
-const(_,cityid(alhambra,_)) alhambra
-const(_,cityid('buena park',_)) buena,park
-const(_,cityid('san leandro',_)) san,leandro
-const(_,cityid(alameda,_)) alameda
-const(_,cityid('newport beach',_)) newport,beach
-const(_,cityid(escondido,_)) escondido
-const(_,cityid(irvine,_)) irvine
-const(_,cityid('mountain view',_)) mountain,view
-const(_,cityid(fairfield,_)) fairfield
-const(_,cityid('redondo beach',_)) redondo,beach
-const(_,cityid('scotts valley',_)) scotts,valley
-const(_,cityid(denver,_)) denver
-const(_,cityid('colorado springs',_)) colorado,springs
-const(_,cityid(aurora,_)) aurora
-const(_,cityid(lakewood,_)) lakewood
-const(_,cityid(pueblo,_)) pueblo
-const(_,cityid(arvada,_)) arvada
-const(_,cityid(boulder,_)) boulder
-const(_,cityid('fort collins',_)) fort,collins
-const(_,cityid(bridgeport,_)) bridgeport
-const(_,cityid(hartford,_)) hartford
-const(_,cityid('new haven',_)) new,haven
-const(_,cityid(waterbury,_)) waterbury
-const(_,cityid(stamford,_)) stamford
-const(_,cityid(norwalk,_)) norwalk
-const(_,cityid('new britain',_)) new,britain
-const(_,cityid('west hartford',_)) west,hartford
-const(_,cityid(danbury,_)) danbury
-const(_,cityid(greenwich,_)) greenwich
-const(_,cityid(bristol,_)) bristol
-const(_,cityid(meriden,_)) meriden
-const(_,cityid(wilmington,_)) wilmington
-const(_,cityid(washington,_)) washington
-const(_,cityid(jacksonville,_)) jacksonville
-const(_,cityid(miami,_)) miami
-const(_,cityid(tampa,_)) tampa
-const(_,cityid('st. petersburg',_)) st.,petersburg
-const(_,cityid('fort lauderdale',_)) fort,lauderdale
-const(_,cityid(orlando,_)) orlando
-const(_,cityid(hollywood,_)) hollywood
-const(_,cityid('miami beach',_)) miami,beach
-const(_,cityid(clearwater,_)) clearwater
-const(_,cityid(tallahassee,_)) tallahassee
-const(_,cityid(gainesville,_)) gainesville
-const(_,cityid(kendall,_)) kendall
-const(_,cityid('west palm beach',_)) west,palm,beach
-const(_,cityid(largo,_)) largo
-const(_,cityid(pensacola,_)) pensacola
-const(_,cityid(atlanta,_)) atlanta
-const(_,cityid(columbus,_)) columbus
-const(_,cityid(savannah,_)) savannah
-const(_,cityid(macon,_)) macon
-const(_,cityid(albany,_)) albany
-const(_,cityid(honolulu,_)) honolulu
-const(_,cityid(ewa,_)) ewa
-const(_,cityid(koolaupoko,_)) koolaupoko
-const(_,cityid(boise,_)) boise
-const(_,cityid(chicago,_)) chicago
-const(_,cityid(rockford,_)) rockford
-const(_,cityid(peoria,_)) peoria
-const(_,cityid(springfield,_)) springfield
-const(_,cityid(decatur,_)) decatur
-const(_,cityid(aurora,_)) aurora
-const(_,cityid(joliet,_)) joliet
-const(_,cityid(evanston,_)) evanston
-const(_,cityid(waukegan,_)) waukegan
-const(_,cityid('arlington heights',_)) arlington,heights
-const(_,cityid(elgin,_)) elgin
-const(_,cityid(cicero,_)) cicero
-const(_,cityid('oak lawn',_)) oak,lawn
-const(_,cityid(skokie,_)) skokie
-const(_,cityid(champaign,_)) champaign
-const(_,cityid(indianapolis,_)) indianapolis
-const(_,cityid('fort wayne',_)) fort,wayne
-const(_,cityid(gary,_)) gary
-const(_,cityid(evansville,_)) evansville
-const(_,cityid('south bend',_)) south,bend
-const(_,cityid(hammond,_)) hammond
-const(_,cityid(muncie,_)) muncie
-const(_,cityid(anderson,_)) anderson
-const(_,cityid('terre haute',_)) terre,haute
-const(_,cityid('des moines',_)) des,moines
-const(_,cityid('cedar rapids',_)) cedar,rapids
-const(_,cityid(davenport,_)) davenport
-const(_,cityid('sioux city',_)) sioux,city
-const(_,cityid(waterloo,_)) waterloo
-const(_,cityid(dubuque,_)) dubuque
 const(_,cityid(wichita,_)) wichita
-const(_,cityid('kansas city',_)) kansas,city
-const(_,cityid(topeka,_)) topeka
-const(_,cityid('overland park',_)) overland,park
-const(_,cityid(louisville,_)) louisville
-const(_,cityid(lexington,_)) lexington
-const(_,cityid('new orleans',_)) new,orleans
-const(_,cityid('baton rouge',_)) baton,rouge
-const(_,cityid(shreveport,_)) shreveport
-const(_,cityid(metairie,_)) metairie
-const(_,cityid(lafayette,_)) lafayette
-const(_,cityid('lake charles',_)) lake,charles
-const(_,cityid(kenner,_)) kenner
-const(_,cityid(monroe,_)) monroe
-const(_,cityid(portland,_)) portland
-const(_,cityid(baltimore,_)) baltimore
-const(_,cityid('silver spring',_)) silver,spring
-const(_,cityid(dundalk,_)) dundalk
-const(_,cityid(bethesda,_)) bethesda
-const(_,cityid(boston,_)) boston
-const(_,cityid(worcester,_)) worcester
-const(_,cityid(springfield,_)) springfield
-const(_,cityid('new bedford',_)) new,bedford
-const(_,cityid(cambridge,_)) cambridge
-const(_,cityid(brockton,_)) brockton
-const(_,cityid('fall river',_)) fall,river
-const(_,cityid(lowell,_)) lowell
-const(_,cityid(quincy,_)) quincy
-const(_,cityid(newton,_)) newton
-const(_,cityid(lynn,_)) lynn
-const(_,cityid(somerville,_)) somerville
-const(_,cityid(framingham,_)) framingham
-const(_,cityid(lawrence,_)) lawrence
-const(_,cityid(waltham,_)) waltham
-const(_,cityid(medford,_)) medford
-const(_,cityid(detroit,_)) detroit
-const(_,cityid('grand rapids',_)) grand,rapids
-const(_,cityid(warren,_)) warren
-const(_,cityid(flint,_)) flint
-const(_,cityid(lansing,_)) lansing
-const(_,cityid('sterling heights',_)) sterling,heights
-const(_,cityid('ann arbor',_)) ann,arbor
-const(_,cityid(livonia,_)) livonia
-const(_,cityid(dearborn,_)) dearborn
-const(_,cityid(westland,_)) westland
-const(_,cityid(kalamazoo,_)) kalamazoo
-const(_,cityid(taylor,_)) taylor
-const(_,cityid(saginaw,_)) saginaw
-const(_,cityid(pontiac,_)) pontiac
-const(_,cityid('st. clair shores',_)) st.,clair,shores
-const(_,cityid(southfield,_)) southfield
-const(_,cityid(clinton,_)) clinton
-const(_,cityid('royal oak',_)) royal,oak
-const(_,cityid('dearborn heights',_)) dearborn,heights
-const(_,cityid(troy,_)) troy
-const(_,cityid(waterford,_)) waterford
-const(_,cityid(wyoming,_)) wyoming
-const(_,cityid(redford,_)) redford
-const(_,cityid('farmington hills',_)) farmington,hills
-const(_,cityid(minneapolis,_)) minneapolis
-const(_,cityid('st. paul',_)) st.,paul
-const(_,cityid(duluth,_)) duluth
-const(_,cityid(bloomington,_)) bloomington
-const(_,cityid(rochester,_)) rochester
-const(_,cityid(jackson,_)) jackson
-const(_,cityid('st. louis',_)) st.,louis
-const(_,cityid('kansas city',_)) kansas,city
-const(_,cityid(springfield,_)) springfield
-const(_,cityid(independence,_)) independence
-const(_,cityid('st. joseph',_)) st.,joseph
-const(_,cityid(columbia,_)) columbia
-const(_,cityid(billings,_)) billings
-const(_,cityid('great falls',_)) great,falls
-const(_,cityid(omaha,_)) omaha
-const(_,cityid(lincoln,_)) lincoln
-const(_,cityid('las vegas',_)) las,vegas
-const(_,cityid(reno,_)) reno
-const(_,cityid(manchester,_)) manchester
-const(_,cityid(nashua,_)) nashua
-const(_,cityid(newark,_)) newark
-const(_,cityid('jersey city',_)) jersey,city
-const(_,cityid(paterson,_)) paterson
-const(_,cityid(elizabeth,_)) elizabeth
-const(_,cityid(trenton,_)) trenton
-const(_,cityid(woodbridge,_)) woodbridge
-const(_,cityid(camden,_)) camden
-const(_,cityid('east orange',_)) east,orange
-const(_,cityid(clifton,_)) clifton
-const(_,cityid(edison,_)) edison
-const(_,cityid('cherry hill',_)) cherry,hill
-const(_,cityid(bayonne,_)) bayonne
-const(_,cityid(middletown,_)) middletown
-const(_,cityid(irvington,_)) irvington
-const(_,cityid(albuquerque,_)) albuquerque
-const(_,cityid('new york',_)) new,york
-const(_,cityid(buffalo,_)) buffalo
-const(_,cityid(rochester,_)) rochester
-const(_,cityid(yonkers,_)) yonkers
-const(_,cityid(syracuse,_)) syracuse
-const(_,cityid(albany,_)) albany
-const(_,cityid(cheektowaga,_)) cheektowaga
-const(_,cityid(utica,_)) utica
-const(_,cityid('niagara falls',_)) niagara,falls
-const(_,cityid('new rochelle',_)) new,rochelle
-const(_,cityid(schenectady,_)) schenectady
-const(_,cityid('mount vernon',_)) mount,vernon
-const(_,cityid(irondequoit,_)) irondequoit
-const(_,cityid(levittown,_)) levittown
-const(_,cityid(charlotte,_)) charlotte
-const(_,cityid(greensboro,_)) greensboro
-const(_,cityid(raleigh,_)) raleigh
+const(_,cityid(wilmington,_)) wilmington
 const(_,cityid(winston-salem,_)) winston-salem
-const(_,cityid(durham,_)) durham
-const(_,cityid('high point',_)) high,point
-const(_,cityid(fayetteville,_)) fayetteville
-const(_,cityid(fargo,_)) fargo
-const(_,cityid(cleveland,_)) cleveland
-const(_,cityid(columbus,_)) columbus
-const(_,cityid(cincinnati,_)) cincinnati
-const(_,cityid(toledo,_)) toledo
-const(_,cityid(akron,_)) akron
-const(_,cityid(dayton,_)) dayton
+const(_,cityid(woodbridge,_)) woodbridge
+const(_,cityid(worcester,_)) worcester
+const(_,cityid(wyoming,_)) wyoming
+const(_,cityid(yonkers,_)) yonkers
 const(_,cityid(youngstown,_)) youngstown
-const(_,cityid(canton,_)) canton
-const(_,cityid(parma,_)) parma
-const(_,cityid(lorain,_)) lorain
-const(_,cityid(springfield,_)) springfield
-const(_,cityid(hamilton,_)) hamilton
-const(_,cityid(lakewood,_)) lakewood
-const(_,cityid(kettering,_)) kettering
-const(_,cityid(euclid,_)) euclid
-const(_,cityid(elyria,_)) elyria
-const(_,cityid('oklahoma city',_)) oklahoma,city
-const(_,cityid(tulsa,_)) tulsa
-const(_,cityid(lawton,_)) lawton
-const(_,cityid(norman,_)) norman
-const(_,cityid(portland,_)) portland
-const(_,cityid(eugene,_)) eugene
-const(_,cityid(salem,_)) salem
-const(_,cityid(philadelphia,_)) philadelphia
-const(_,cityid(pittsburgh,_)) pittsburgh
-const(_,cityid(erie,_)) erie
-const(_,cityid(allentown,_)) allentown
-const(_,cityid(scranton,_)) scranton
-const(_,cityid('upper darby',_)) upper,darby
-const(_,cityid(reading,_)) reading
-const(_,cityid(bethlehem,_)) bethlehem
-const(_,cityid('lower merion',_)) lower,merion
-const(_,cityid(abingdon,_)) abingdon
-const(_,cityid('bristol township',_)) bristol,township
-const(_,cityid('penn hills',_)) penn,hills
-const(_,cityid(altoona,_)) altoona
-const(_,cityid(providence,_)) providence
-const(_,cityid(warwick,_)) warwick
-const(_,cityid(cranston,_)) cranston
-const(_,cityid(pawtucket,_)) pawtucket
-const(_,cityid(columbia,_)) columbia
-const(_,cityid(charleston,_)) charleston
-const(_,cityid('north charleston',_)) north,charleston
-const(_,cityid(greenville,_)) greenville
-const(_,cityid('sioux falls',_)) sioux,falls
-const(_,cityid(memphis,_)) memphis
-const(_,cityid(nashville,_)) nashville
-const(_,cityid(knoxville,_)) knoxville
-const(_,cityid(chattanooga,_)) chattanooga
-const(_,cityid(houston,_)) houston
-const(_,cityid(dallas,_)) dallas
-const(_,cityid('san antonio',_)) san,antonio
-const(_,cityid('el paso',_)) el,paso
-const(_,cityid('fort worth',_)) fort,worth
-const(_,cityid(austin,_)) austin
-const(_,cityid('corpus christi',_)) corpus,christi
-const(_,cityid(lubbock,_)) lubbock
-const(_,cityid(arlington,_)) arlington
-const(_,cityid(amarillo,_)) amarillo
-const(_,cityid(garland,_)) garland
-const(_,cityid(beaumont,_)) beaumont
-const(_,cityid(pasadena,_)) pasadena
-const(_,cityid(irving,_)) irving
-const(_,cityid(waco,_)) waco
-const(_,cityid(abilene,_)) abilene
-const(_,cityid('wichita falls',_)) wichita,falls
-const(_,cityid(laredo,_)) laredo
-const(_,cityid(odessa,_)) odessa
-const(_,cityid(brownsville,_)) brownsville
-const(_,cityid('san angelo',_)) san,angelo
-const(_,cityid(richardson,_)) richardson
-const(_,cityid(plano,_)) plano
-const(_,cityid('grand prairie',_)) grand,prairie
-const(_,cityid(midland,_)) midland
-const(_,cityid(tyler,_)) tyler
-const(_,cityid(mesquite,_)) mesquite
-const(_,cityid(mcallen,_)) mcallen
-const(_,cityid(longview,_)) longview
-const(_,cityid('port arthur',_)) port,arthur
-const(_,cityid('salt lake city',_)) salt,lake,city
-const(_,cityid(provo,_)) provo
-const(_,cityid('west valley',_)) west,valley
-const(_,cityid(ogden,_)) ogden
-const(_,cityid(norfolk,_)) norfolk
-const(_,cityid('virginia beach',_)) virginia,beach
-const(_,cityid(richmond,_)) richmond
-const(_,cityid(arlington,_)) arlington
-const(_,cityid('newport news',_)) newport,news
-const(_,cityid(hampton,_)) hampton
-const(_,cityid(chesapeake,_)) chesapeake
-const(_,cityid(portsmouth,_)) portsmouth
-const(_,cityid(alexandria,_)) alexandria
-const(_,cityid(roanoke,_)) roanoke
-const(_,cityid(lynchburg,_)) lynchburg
-const(_,cityid(seattle,_)) seattle
-const(_,cityid(spokane,_)) spokane
-const(_,cityid(tacoma,_)) tacoma
-const(_,cityid(bellevue,_)) bellevue
-const(_,cityid(charleston,_)) charleston
-const(_,cityid(huntington,_)) huntington
-const(_,cityid(milwaukee,_)) milwaukee
-const(_,cityid(madison,_)) madison
-const(_,cityid('green bay',_)) green,bay
-const(_,cityid(racine,_)) racine
-const(_,cityid(kenosha,_)) kenosha
-const(_,cityid('west allis',_)) west,allis
-const(_,cityid(appleton,_)) appleton
-const(_,cityid(casper,_)) casper
-const(_,cityid(dover,_)) dover
 
 # CITIES WITH STATE
 const(_,cityid('birmingham',al)) birmingham,alabama
