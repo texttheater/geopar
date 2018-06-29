@@ -23,6 +23,8 @@ def integrate_allowed(term, arg_num):
         return arg_num == 2
     if term.functor_name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
         return arg_num == 2
+    if term.functor_name == '\+':
+        return arg_num == 1
     if len(term.functor_name) == 1: # single-letter names for testing
         return True
     return False
