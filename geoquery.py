@@ -31,7 +31,7 @@ def integrate_allowed(term, arg_num):
 
 
 def skip_allowed(queue):
-    if queue.head in ('is', 'of', 'with', 'city', 'in'):
+    if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'state', 'least'):
         return True
     for token_length in range(1, parseitems.MAX_TOKEN_LENGTH + 1):
         try:
