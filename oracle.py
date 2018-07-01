@@ -1,10 +1,6 @@
 import parseitems
 
 
-def item_id(item):
-    return str(item)
-
-
 class Rejector:
 
     def __init__(self, target_mr):
