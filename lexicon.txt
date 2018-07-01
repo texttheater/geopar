@@ -54,6 +54,7 @@ high_point(_,_) high,point
 high_point(_,_) high,points
 len(_,_) length
 len(_,_) long
+population(_,_) many,citizens
 population(_,_) citizens
 population(_,_) inhabitants
 population(_,_) people
@@ -89,6 +90,7 @@ traverse(_,_) lie,on
 traverse(_,_) passes
 traverse(_,_) though
 traverse(_,_) through
+traverse(_,_) passes,through
 traverse(_,_) traverses
 traverse(_,_) traversed
 traverse(_,_) traverse
