@@ -45,8 +45,10 @@ major(_) major
 # PROPERTIES
 area(_,_) area
 area(_,_) square,kilometers
+area(_,_) many,square,kilometers
 density(_,_) average,population
 density(_,_) density
+density(_,_) population,density
 elevation(_,_) elevation
 elevation(_,_) height
 elevation(_,_) high
@@ -55,6 +57,8 @@ high_point(_,_) high,points
 len(_,_) length
 len(_,_) long
 population(_,_) many,citizens
+population(_,_) many,inhabitants
+population(_,_) many,people
 population(_,_) citizens
 population(_,_) inhabitants
 population(_,_) people
