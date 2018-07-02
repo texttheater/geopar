@@ -11,22 +11,31 @@ def new_element(mr):
     return StackElement(mr, lstack.stack())
 
 
+def fix_address(address, liftee_address):
+    pl = len(liftee_address) - 1
+    if address[:pl] == liftee_addres[:pl]:
+        address = address[:pl] + (address[pl] + 1,) + address[pl + 1:]
+    return address
+
+
 class StackElement:
 
     def __init__(self, mr, secstack):
         self.mr = mr
         self.secstack = secstack
 
-    def _target(self):
+    def _target_address(self):
         if self.secstack.is_empty():
-            return self.mr
+            address = ()
         else:
-            return self.secstack.head
+            address = self.secstack.head
+        target = self.mr.at_address(address)
+        return target, address
 
     def drop(self, other, arg_num):
         if not other.secstack.is_empty():
             raise IllegalAction('cannot drop a stack element with a non-empty secondary stack')
-        target = self._target()
+        target, address_target = self._target_address()
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only drop into complex terms')
         if not geoquery.integrate_allowed(target, arg_num):
@@ -36,18 +45,22 @@ class StackElement:
         old = target.args[arg_num - 1]
         if isinstance(old, terms.Variable):
             new = other.mr
+            conj_num = 1
         elif isinstance(old, terms.ConjunctiveTerm):
             new = terms.ConjunctiveTerm(old.conjuncts + (other.mr,))
+            conj_num = len(new.conjuncts)
         else:
             new = terms.ConjunctiveTerm((old, other.mr))
+            conj_num = 2
         mr = self.mr.replace(old, new)
-        secstack = lstack.stack(m.replace(old, new) for m in self.secstack).push(other.mr)
+        address_droppee = address_target + (arg_num, conj_num)
+        secstack = self.secstack.push(address_droppee)
         return StackElement(mr, secstack)
 
     def lift(self, other, arg_num):
         if not other.secstack.is_empty():
             raise IllegalAction('cannot lift a stack element with a non-empty secondary stack')
-        target = self._target()
+        target, address_target = self._target_address()
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only lift into complex terms')
         if not geoquery.integrate_allowed(target, arg_num):
@@ -57,25 +70,29 @@ class StackElement:
         old = target.args[arg_num - 1]
         if isinstance(old, terms.Variable):
             new = other.mr
+            conj_num = 1
         elif isinstance(old, terms.ConjunctiveTerm):
             new = terms.ConjunctiveTerm((other.mr,) + old.conjuncts)
+            conj_num = 1
         else:
             new = terms.ConjunctiveTerm((other.mr, old))
+            conj_num = 1
         mr = self.mr.replace(old, new)
-        secstack = lstack.stack(m.replace(old, new) for m in self.secstack).push(other.mr)
+        address_liftee = address_target + (arg_num, conj_num)
+        secstack = lstack.stack(fix_address(a, address_liftee) for m in self.secstack).push(address_liftee)
         return StackElement(mr, secstack)
 
     def coref(self, arg_num, other, other_arg_num):
         # coref is between the targets of the two topmost elements
         # only the topmost element changes (is this enough??)
-        target = self._target()
+        target, _ = self._target_address()
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(target, arg_num):
             raise IllegalAction('cannot coref with this argument')
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
-        other_target = other._target()
+        other_target, _ = other._target_address()
         if not isinstance(other_target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(other_target, other_arg_num):
@@ -91,8 +108,7 @@ class StackElement:
         if old == new:
             raise IllegalAction('variables already corefed')
         mr = self.mr.replace(old, new)
-        secstack = lstack.stack(m.replace(old, new) for m in self.secstack)
-        return StackElement(mr, secstack)
+        return StackElement(mr, self.secstack)
 
     def pop(self):
         try:

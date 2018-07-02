@@ -198,7 +198,8 @@ class ParseItem:
         stack = []
         var_name_dict = terms.make_var_name_dict()
         for se in reversed(self.stack):
-            stack.append(se.mr.to_string(var_name_dict, se.secstack))
+            marked_terms = tuple(se.mr.at_address(a) for a in se.secstack)
+            stack.append(se.mr.to_string(var_name_dict, marked_terms))
         return 'ParseItem([' + ', '.join(stack) + '], [' + \
             ', '.join(self.queue) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'

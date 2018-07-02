@@ -15,10 +15,11 @@ variable names) with the to_string method.
 Term Addresses
 ==============
 
-The methods left_address and right_address, given a list of argument numbers to
-be read from outermost to innermost, return the subterm at the given address.
-Conjunctive terms cannot be addressed; the leftmost/rightmost conjunct is
-addressed instead.
+Subterms have addresses. An address is a tuple of positive integers alternating
+between argument numbers and conjunct numbers. An argument number picks out an
+argument of a complex term. Then, the following conjunct number picks out the
+conjunct within that argument. If the argument is not a conjunctive term, the
+conjunct number must be 1.
 
 Replacing Terms
 ===============
@@ -60,14 +61,6 @@ def _unquote(quoted_atom):
     return between_part
 
 
-class AddressError(Exception):
-
-    """Signals that no subterm exists at the specified address.
-    """
-
-    pass
-
-
 class Term:
 
     def equivalent(self, other):
@@ -82,20 +75,15 @@ class Term:
         # check that no subterm is bound to twice:
         return len(bindings) == len(set(bindings.values()))
 
-    def left_address(self, address):
+    def at_address(self, address):
         if not len(address) == 0:
-            raise AddressError()
-        return self
-
-    def right_address(self, address):
-        if not len(address) == 0:
-            raise AddressError()
+            raise IndexError()
         return self
 
 
 class Variable(Term):
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
         return var_name_dict[self]
@@ -125,7 +113,7 @@ class Atom(Term):
     def __init__(self, name):
         self.name = name
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         match = _ATOM_PATTERN.fullmatch(self.name)
         if match:
             return self.name
@@ -159,25 +147,25 @@ class ComplexTerm(Term):
         self.functor_name = functor_name
         self.args = tuple(args)
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
-        if secstack is None:
-            secstack = lstack.stack()
+        if marked_terms is None:
+            marked_terms = lstack.stack()
         prefix = ''
-        for i, term in enumerate(secstack):
+        for i, term in enumerate(marked_terms):
             if term == self:
                 prefix = '[{}]'.format(i)
         if self.functor_name == 'parse' and len(self.args) == 2:
             sep = ', ' # quirk in the data
         elif self.functor_name == '\\+' and len(self.args) == 1:
             if isinstance(self.args[0], ConjunctiveTerm):
-                return prefix + '\\+ ' + self.args[0].to_string(var_name_dict, secstack)
+                return prefix + '\\+ ' + self.args[0].to_string(var_name_dict, marked_terms)
             else:
-                return prefix + '\\+' + self.args[0].to_string(var_name_dict, secstack)
+                return prefix + '\\+' + self.args[0].to_string(var_name_dict, marked_terms)
         else:
             sep = ','
-        return prefix + self.functor_name + '(' + sep.join(arg.to_string(var_name_dict, secstack) for arg in self.args) + ')'
+        return prefix + self.functor_name + '(' + sep.join(arg.to_string(var_name_dict, marked_terms) for arg in self.args) + ')'
 
     def subterms(self):
         yield self
@@ -210,15 +198,19 @@ class ComplexTerm(Term):
         args_new = [arg.replace(old, new) for arg in self.args]
         return ComplexTerm(self.functor_name, args_new)
 
-    def left_address(self, address):
+    def at_address(self, address):
         if len(address) == 0:
             return self
-        return self.args[address[0] - 1].left_address(address[1:])
-
-    def right_address(self, address):
-        if len(address) == 0:
-            return self
-        return self.args[address[0] - 1].right_address(address[1:])
+        arg_num = address[0]
+        conj_num = address[1]
+        arg = self.args[arg_num - 1]
+        if isinstance(arg, ConjunctiveTerm):
+            subterm = arg.conjuncts[conj_num - 1]
+        else:
+            if conj_num != 1:
+                raise IndexError()
+            subterm = arg
+        return subterm.at_address(address[2:])
 
 
 class ConjunctiveTerm(Term):
@@ -226,12 +218,12 @@ class ConjunctiveTerm(Term):
     def __init__(self, conjuncts):
         self.conjuncts = tuple(conjuncts)
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
-        if secstack is None:
-            secstack = lstack.stack()
-        return '(' + ','.join(conjunct.to_string(var_name_dict, secstack) for conjunct in self.conjuncts) + ')'
+        if marked_terms is None:
+            marked_terms = lstack.stack()
+        return '(' + ','.join(conjunct.to_string(var_name_dict, marked_terms) for conjunct in self.conjuncts) + ')'
 
     def subterms(self):
         yield self
@@ -266,19 +258,13 @@ class ConjunctiveTerm(Term):
         conjuncts_new = [conj.replace(old, new) for conj in self.conjuncts]
         return ConjunctiveTerm(conjuncts_new)
 
-    def left_address(self, address):
-        return self.conjuncts[0].left_address(address)
-
-    def right_address(self, address):
-        return self.conjuncts[-1].right_address(address)
-
 
 class Number(Term):
 
     def __init__(self, number):
         self.number = number
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         return str(self.number)
 
     def subterms(self):
@@ -306,12 +292,12 @@ class List:
     def __init__(self, elements):
         self.elements = elements
 
-    def to_string(self, var_name_dict=None, secstack=None):
+    def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
-        if secstack is None:
-            secstack = lstack.stack()
-        return '[' + ','.join(element.to_string(var_name_dict, secstack) for element in self.elements) + ']'
+        if marked_terms is None:
+            marked_terms = lstack.stack()
+        return '[' + ','.join(element.to_string(var_name_dict, marked_terms) for element in self.elements) + ']'
 
 
 def read_term(string, name_var_dict=None):
