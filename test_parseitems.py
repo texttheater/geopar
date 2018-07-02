@@ -123,8 +123,6 @@ class ItemsTestCase(unittest.TestCase):
             ('drop', 2),
             ('skip',),
             ('shift', 1, '\+A'),
-            ('pop',),
-            ('drop', 2),
             ('shift', 1, 'traverse(A,B)'),
             ('drop', 1),
             ('coref', 1, 1),
@@ -149,6 +147,8 @@ class ItemsTestCase(unittest.TestCase):
             ('skip',),
             ('pop',),
             ('pop',),
+            ('drop', 2),
+            ('pop',),
             ('pop',),
             ('finish',),
             ('idle',),
@@ -165,7 +165,6 @@ class ItemsTestCase(unittest.TestCase):
         rejector = oracle.Rejector(target_mr)
         for action in actions:
             print(item)
-            print(list(item.stack.head.secstack))
             item.successor(action)
             successors = item.successors()
             successors = [s for s in successors if s.action == action]
