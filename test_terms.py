@@ -1,3 +1,4 @@
+import lstack
 import terms
 import unittest
 
@@ -166,3 +167,16 @@ class TermsTestCase(unittest.TestCase):
         t1 = terms.from_string('a(A,B)')
         t2 = terms.from_string('a(A,A)')
         self.assertFalse(t1.subsumes_without_identification(t2))
+
+    def test_secstack(self):
+        t1 = terms.from_string('a(A)')
+        t2 = terms.from_string('b(B)')
+        t3 = terms.ConjunctiveTerm((t1, t2))
+        secstack = lstack.stack()
+        self.assertEqual(t3.to_string(secstack=secstack), '(a(A),b(B))')
+        secstack = lstack.stack((t1,))
+        self.assertEqual(t3.to_string(secstack=secstack), '([0]a(A),b(B))')
+        secstack = lstack.stack((t2,))
+        self.assertEqual(t3.to_string(secstack=secstack), '(a(A),[0]b(B))')
+        secstack = lstack.stack((t2,t1))
+        self.assertEqual(t3.to_string(secstack=secstack), '([1]a(A),[0]b(B))')

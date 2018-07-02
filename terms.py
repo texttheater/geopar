@@ -31,6 +31,7 @@ Note that equivalence implies token-identity only for variables.
 
 
 import collections
+import lstack
 import re
 import util
 
@@ -94,7 +95,7 @@ class Term:
 
 class Variable(Term):
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
         return var_name_dict[self]
@@ -124,7 +125,7 @@ class Atom(Term):
     def __init__(self, name):
         self.name = name
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         match = _ATOM_PATTERN.fullmatch(self.name)
         if match:
             return self.name
@@ -158,19 +159,25 @@ class ComplexTerm(Term):
         self.functor_name = functor_name
         self.args = tuple(args)
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
+        if secstack is None:
+            secstack = lstack.stack()
+        prefix = ''
+        for i, term in enumerate(secstack):
+            if term == self:
+                prefix = '[{}]'.format(i)
         if self.functor_name == 'parse' and len(self.args) == 2:
             sep = ', ' # quirk in the data
         elif self.functor_name == '\\+' and len(self.args) == 1:
             if isinstance(self.args[0], ConjunctiveTerm):
-                return '\\+ ' + self.args[0].to_string(var_name_dict)
+                return prefix + '\\+ ' + self.args[0].to_string(var_name_dict, secstack)
             else:
-                return '\\+' + self.args[0].to_string(var_name_dict)
+                return prefix + '\\+' + self.args[0].to_string(var_name_dict, secstack)
         else:
             sep = ','
-        return self.functor_name + '(' + sep.join(arg.to_string(var_name_dict) for arg in self.args) + ')'
+        return prefix + self.functor_name + '(' + sep.join(arg.to_string(var_name_dict, secstack) for arg in self.args) + ')'
 
     def subterms(self):
         yield self
@@ -219,10 +226,12 @@ class ConjunctiveTerm(Term):
     def __init__(self, conjuncts):
         self.conjuncts = tuple(conjuncts)
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
-        return '(' + ','.join(conjunct.to_string(var_name_dict) for conjunct in self.conjuncts) + ')'
+        if secstack is None:
+            secstack = lstack.stack()
+        return '(' + ','.join(conjunct.to_string(var_name_dict, secstack) for conjunct in self.conjuncts) + ')'
 
     def subterms(self):
         yield self
@@ -269,7 +278,7 @@ class Number(Term):
     def __init__(self, number):
         self.number = number
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         return str(self.number)
 
     def subterms(self):
@@ -297,10 +306,12 @@ class List:
     def __init__(self, elements):
         self.elements = elements
 
-    def to_string(self, var_name_dict=None):
+    def to_string(self, var_name_dict=None, secstack=None):
         if var_name_dict is None:
             var_name_dict = make_var_name_dict()
-        return '[' + ','.join(element.to_string(var_name_dict) for element in self.elements) + ']'
+        if secstack is None:
+            secstack = lstack.stack()
+        return '[' + ','.join(element.to_string(var_name_dict, secstack) for element in self.elements) + ']'
 
 
 def read_term(string, name_var_dict=None):

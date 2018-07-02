@@ -9,10 +9,10 @@ class Rejector:
 
     def reject(self, item, siblings=None):
         if item.finished:
-            return not item.stack.head.equivalent(self.target_mr)
+            return not item.stack.head.mr.equivalent(self.target_mr)
         # TODO enforce consistency across stack elements?
-        for term in item.stack:
-            if not any(term.subsumes_without_identification(f) for f in self.fragments):
+        for se in item.stack:
+            if not any(se.mr.subsumes_without_identification(f) for f in self.fragments):
                 return True
         return False
 
