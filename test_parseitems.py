@@ -179,6 +179,47 @@ class ItemsTestCase(unittest.TestCase):
         ]
         self._test_action_sequence(words, actions, target_mr)
 
+    def test_example6(self):
+        words = ('of', 'the', 'states', 'washed', 'by', 'the', 'mississippi', 'river', 'which', 'has', 'the', 'lowest', 'point', '?')
+        target_mr = terms.from_string('answer(A,lowest(B,(state(A),traverse(C,A),const(C,riverid(mississippi)),loc(B,A),place(B))))')
+        actions = [
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'state(A)'),
+            ('coref', 1, 1),
+            ('shift', 1, 'traverse(A,B)'),
+            ('coref', 1, 2),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, "const(A,riverid(mississippi))"),
+            ('coref', 1, 1),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'loc(A,B)'),
+            ('skip',),
+            ('shift', 1, 'lowest(A,B)'),
+            ('coref', 1, 1),
+            ('lift', 0, 2),
+            ('pop',),
+            ('lift', 0, 2),
+            ('pop',),
+            ('lift', 0, 2),
+            ('pop',),
+            ('coref', 2, 1),
+            ('pop',),
+            ('lift', 0, 2),
+            ('shift', 1, 'place(A)'),
+            ('coref', 1, 1),
+            ('drop', 2),
+            ('pop',),
+            ('drop', 2),
+            ('pop',),
+            ('finish',),
+            ('idle',),
+        ]
+        self._test_action_sequence(words, actions, target_mr)
+
+
     def _test_action_sequence(self, words, actions, target_mr):
         """Tests that the given action sequence is found.
 
