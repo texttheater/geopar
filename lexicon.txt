@@ -91,16 +91,16 @@ next_to(_,_) next,to
 next_to(_,_) surrounding
 traverse(_,_) cross
 traverse(_,_) in
-traverse(_,_) lie,on
+traverse(_,_) lie
 traverse(_,_) passes
-traverse(_,_) though
-traverse(_,_) through
-traverse(_,_) passes,through
 traverse(_,_) traverses
 traverse(_,_) traversed
 traverse(_,_) traverse
 traverse(_,_) washed
 traverse(_,_) with
+traverse(_,_) flow
+traverse(_,_) run
+traverse(_,_) runs
 
 # COMPARATIVES
 higher(_,_) higher
