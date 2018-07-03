@@ -66,6 +66,7 @@ population(_,_) population
 population(_,_) populations
 population(_,_) populous
 population(_,_) populated
+population(_,_) number,of,citizens
 size(_,_) big
 size(_,_) large
 size(_,_) size
