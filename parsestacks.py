@@ -24,18 +24,24 @@ class StackElement:
         self.mr = mr
         self.secstack = secstack
 
-    def _target_address(self):
-        if self.secstack.is_empty():
+    def _target_address(self, secstack_position):
+        # Retrieve the address at the given position on the secstack.
+        # Return () if position == len(self.secstack)
+        secstack = self.secstack
+        while secstack_position > 0:
+            secstack = secstack.tail
+            secstack_position -= 1
+        if secstack.is_empty():
             address = ()
         else:
-            address = self.secstack.head
+            address = secstack.head
         target = self.mr.at_address(address)
         return target, address
 
-    def drop(self, other, arg_num):
+    def drop(self, secstack_position, arg_num, other):
         if not other.secstack.is_empty():
             raise IllegalAction('cannot drop a stack element with a non-empty secondary stack')
-        target, address_target = self._target_address()
+        target, address_target = self._target_address(secstack_position)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only drop into complex terms')
         if not geoquery.integrate_allowed(target, arg_num):
@@ -57,10 +63,10 @@ class StackElement:
         secstack = self.secstack.push(address_droppee)
         return StackElement(mr, secstack)
 
-    def lift(self, other, arg_num):
+    def lift(self, secstack_position, arg_num, other):
         if not other.secstack.is_empty():
             raise IllegalAction('cannot lift a stack element with a non-empty secondary stack')
-        target, address_target = self._target_address()
+        target, address_target = self._target_address(secstack_position)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only lift into complex terms')
         if not geoquery.integrate_allowed(target, arg_num):
@@ -85,14 +91,14 @@ class StackElement:
     def coref(self, arg_num, other, other_arg_num):
         # coref is between the targets of the two topmost elements
         # only the topmost element changes (is this enough??)
-        target, _ = self._target_address()
+        target, _ = self._target_address(0)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(target, arg_num):
             raise IllegalAction('cannot coref with this argument')
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
-        other_target, _ = other._target_address()
+        other_target, _ = other._target_address(0)
         if not isinstance(other_target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(other_target, other_arg_num):
