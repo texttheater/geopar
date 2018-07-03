@@ -1,3 +1,4 @@
+import config
 import geoquery
 import lexicon
 import lstack
@@ -6,7 +7,6 @@ import parsestacks
 import terms
 
 
-MAX_TOKEN_LENGTH = 3
 INIT_STACK = lstack.stack((parsestacks.new_element(terms.from_string('answer(_,_)')),))
 
 
@@ -152,7 +152,7 @@ class ParseItem:
             except (IndexError, parsestacks.IllegalAction):
                 continue
         # shift
-        for token_length in range(1, MAX_TOKEN_LENGTH + 1):
+        for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
             try:
                 token = tuple(self.queue[i] for i in range(token_length))
             except IndexError: # queue too short

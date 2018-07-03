@@ -1,0 +1,2 @@
+MAX_TOKEN_LENGTH = 3
+

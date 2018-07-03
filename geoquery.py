@@ -3,7 +3,7 @@
 
 
 import lexicon
-import parseitems
+import config
 
 
 def coref_allowed(term, arg_num):
@@ -33,7 +33,7 @@ def integrate_allowed(term, arg_num):
 def skip_allowed(queue):
     if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'state', 'least'):
         return True
-    for token_length in range(1, parseitems.MAX_TOKEN_LENGTH + 1):
+    for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
         try:
             token = tuple(queue[i] for i in range(token_length))
         except IndexError:
