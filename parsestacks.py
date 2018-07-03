@@ -13,7 +13,7 @@ def new_element(mr):
 
 def fix_address(address, liftee_address):
     pl = len(liftee_address) - 1
-    if address[:pl] == liftee_addres[:pl]:
+    if address[:pl] == liftee_address[:pl]:
         address = address[:pl] + (address[pl] + 1,) + address[pl + 1:]
     return address
 
@@ -85,7 +85,7 @@ class StackElement:
             conj_num = 1
         mr = self.mr.replace(old, new)
         address_liftee = address_target + (arg_num, conj_num)
-        secstack = lstack.stack(fix_address(a, address_liftee) for m in self.secstack).push(address_liftee)
+        secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
         return StackElement(mr, secstack)
 
     def coref(self, arg_num, other, other_arg_num):
