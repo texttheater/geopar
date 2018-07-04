@@ -80,6 +80,7 @@ loc(_,_) have
 loc(_,_) has
 loc(_,_) of
 loc(_,_) with
+loc(_,_) whose
 next_to(_,_) adjacent
 next_to(_,_) adjoin
 next_to(_,_) border
