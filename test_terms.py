@@ -140,22 +140,33 @@ class TermsTestCase(unittest.TestCase):
 
     def test_fragments1(self):
         term = terms.from_string('(a,b,c,d,e)')
-        gold = ['a', 'b', 'c', 'd', 'e', '(a,b)', '(a,b,c)', '(a,b,c,d)',
-                '(a,b,c,d,e)', '(b,c,d,e)', '(c,d,e)', '(d,e)']
+        gold = ['a', '(a,b)', '(a,b,c)', '(a,b,c,d)', '(a,b,c,d,e)', 'b',
+                '(b,c)', '(b,c,d)', '(b,c,d,e)', 'c', '(c,d)', '(c,d,e)', 'd',
+                '(d,e)', 'e']
         pred = [f.to_string() for f in term.fragments()]
         self.assertEqual(pred, gold)
 
     def test_fragments2(self):
         term = terms.from_string('a(a,(b,c))')
-        gold = ['a', 'b', 'c', '(b,c)', 'a(a,b)', 'a(a,c)', 'a(a,(b,c))']
+        gold = ['a(a,b)', 'a(a,(b,c))', 'a(a,c)']
         pred = [f.to_string() for f in term.fragments()]
         self.assertEqual(pred, gold)
 
     def test_fragments3(self):
         term = terms.from_string('a(A,(b,c))')
-        gold = ['A', 'b', 'c', '(b,c)', 'a(A,b)', 'a(A,c)', 'a(A,(b,c))']
+        gold = ['a(A,b)', 'a(A,(b,c))', 'a(A,c)']
         pred = [f.to_string() for f in term.fragments()]
         self.assertEqual(pred, gold)
+
+    def test_fragments4(self):
+        target = terms.from_string('answer(A,lowest(B,(state(A),traverse(C,A),const(C,riverid(mississippi)),loc(B,A),place(B))))')
+        subterm = terms.from_string('lowest(D,(const(C,riverid(mississippi)),loc(D,E)))')
+        self.assertTrue(any(subterm.subsumes(f) for s in target.subterms() for f in s.fragments()))
+
+    def test_fragments5(self):
+        target = terms.from_string('answer(A,lowest(B,(state(A),traverse(C,A),const(C,riverid(mississippi)),loc(B,A),place(B))))')
+        subterm = terms.from_string('lowest(C,(traverse(D,A),const(D,riverid(mississippi)),loc(C,E)))')
+        self.assertTrue(any(subterm.subsumes(f) for s in target.subterms() for f in s.fragments()))
 
     def test_subsumes_without_identification(self):
         t1 = terms.from_string('a(A,B)')

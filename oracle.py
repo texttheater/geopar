@@ -5,14 +5,14 @@ class Rejector:
 
     def __init__(self, target_mr):
         self.target_mr = target_mr
-        self.fragments = list(target_mr.fragments())
+        self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
 
     def reject(self, item, siblings=None):
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
         # TODO enforce consistency across stack elements?
         for se in item.stack:
-            if not any(se.mr.subsumes_without_identification(f) for f in self.fragments):
+            if not any(se.mr.subsumes(f) for f in self.fragments):
                 return True
         return False
 
