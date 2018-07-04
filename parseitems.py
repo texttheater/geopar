@@ -169,6 +169,12 @@ class ParseItem:
             yield self.pop()
         except (IndexError, parsestacks.IllegalAction):
             pass
+        # lift (ssp = 1)
+        for arg in range(1, 4):
+            try:
+                yield self.lift(1, arg)
+            except (IndexError, parsestacks.IllegalAction):
+                continue
         # drop (ssp = 1)
         for arg in range(1, 4):
             try:
