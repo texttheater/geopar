@@ -102,6 +102,12 @@ traverse(_,_) with
 traverse(_,_) flow
 traverse(_,_) run
 traverse(_,_) runs
+traverse(_,_) running
+traverse(_,_) flowing
+traverse(_,_) flows
+traverse(_,_) go
+traverse(_,_) pass
+
 
 # COMPARATIVES
 higher(_,_) higher
