@@ -49,15 +49,10 @@ class StackElement:
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
         old = target.args[arg_num - 1]
-        if isinstance(old, terms.Variable):
-            new = other.mr
-            conj_num = 1
-        elif isinstance(old, terms.ConjunctiveTerm):
-            new = terms.ConjunctiveTerm(old.conjuncts + (other.mr,))
-            conj_num = len(new.conjuncts)
-        else:
-            new = terms.ConjunctiveTerm((old, other.mr))
-            conj_num = 2
+        if not isinstance(old, terms.Variable):
+            raise IllegalAction('can only drop into variable arguments')
+        new = other.mr
+        conj_num = 1
         mr = self.mr.replace(old, new)
         address_droppee = address_target + (arg_num, conj_num)
         secstack = self.secstack.push(address_droppee)
@@ -93,15 +88,10 @@ class StackElement:
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
         old = target.args[arg_num - 1]
-        if isinstance(old, terms.Variable):
-            new = other.mr
-            conj_num = 1
-        elif isinstance(old, terms.ConjunctiveTerm):
-            new = terms.ConjunctiveTerm((other.mr,) + old.conjuncts)
-            conj_num = 1
-        else:
-            new = terms.ConjunctiveTerm((other.mr, old))
-            conj_num = 1
+        if not isinstance(old, terms.Variable):
+            raise IllegalAction('can only lift into variable arguments')
+        new = other.mr
+        conj_num = 1
         mr = self.mr.replace(old, new)
         address_liftee = address_target + (arg_num, conj_num)
         secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
@@ -126,8 +116,10 @@ class StackElement:
         secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
         return StackElement(mr, secstack)
 
-    def coref(self, arg_num, other, other_arg_num):
+    def coref(self, arg_num, other, other_secstack_position, other_arg_num):
         # coref is between the targets of the two topmost elements
+        #if not self.secstack.is_empty():
+        #    raise IllegalAction('can only coref with an empty secondary stack in the topmost stack element') # ?
         target, _ = self._target_address(0)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
@@ -135,7 +127,7 @@ class StackElement:
             raise IllegalAction('cannot coref with this argument')
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
-        other_target, _ = other._target_address(0)
+        other_target, _ = other._target_address(other_secstack_position)
         if not isinstance(other_target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(other_target, other_arg_num):
