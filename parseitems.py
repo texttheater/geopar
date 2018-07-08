@@ -25,12 +25,12 @@ class ParseItem:
         self.action = action
         self.pred = pred
 
-    def coref(self, ssp1, arg1, arg0):
+    def coref(self, ssp1, arg1, ssp0, arg0):
         se0 = self.stack[0]
         se1 = self.stack[1]
-        old, new = se0.coref(arg0, se1, ssp1, arg1)
+        old, new = se0.coref(ssp0, arg0, se1, ssp1, arg1)
         stack = lstack.stack(parsestacks.StackElement(se.mr.replace(old, new), se.secstack) for se in self.stack)
-        return ParseItem(stack, self.queue, False, ('coref', ssp1, arg1, arg0), self)
+        return ParseItem(stack, self.queue, False, ('coref', ssp1, arg1, ssp0, arg0), self)
 
     def lift(self, arg_num):
         stack = self.stack
@@ -130,7 +130,7 @@ class ParseItem:
 
     def successor(self, action):
         if action[0] == 'coref':
-            return self.coref(action[1], action[2], action[3])
+            return self.coref(action[1], action[2], action[3], action[4])
         if action[0] == 'lift':
             return self.lift(action[1])
         if action[0] == 'slift':
@@ -157,11 +157,12 @@ class ParseItem:
         # coref
         for ssp1 in range(1, -1, -1):
             for arg1 in range(1, 4):
-                for arg0 in range(1, 4):
-                    try:
-                        yield self.coref(ssp1, arg1, arg0)
-                    except (IndexError, parsestacks.IllegalAction):
-                        continue
+                for ssp0 in range(1, -1, -1):
+                    for arg0 in range(1, 4):
+                        try:
+                            yield self.coref(ssp1, arg1, ssp0, arg0)
+                        except (IndexError, parsestacks.IllegalAction):
+                            continue
         # lift
         for arg in range(1, 4):
             try:

@@ -116,11 +116,9 @@ class StackElement:
         secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
         return StackElement(mr, secstack)
 
-    def coref(self, arg_num, other, other_secstack_position, other_arg_num):
+    def coref(self, secstack_position, arg_num, other, other_secstack_position, other_arg_num):
         # coref is between the targets of the two topmost elements
-        #if not self.secstack.is_empty():
-        #    raise IllegalAction('can only coref with an empty secondary stack in the topmost stack element') # ?
-        target, _ = self._target_address(0)
+        target, _ = self._target_address(secstack_position)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(target, arg_num):
