@@ -113,8 +113,7 @@ class StackElement:
             raise IllegalAction('can only coref variables')
         if old == new:
             raise IllegalAction('variables already corefed')
-        mr = self.mr.replace(old, new)
-        return StackElement(mr, self.secstack)
+        return old, new
 
     def pop(self):
         try:

@@ -26,12 +26,10 @@ class ParseItem:
         self.pred = pred
 
     def coref(self, arg1, arg0):
-        stack = self.stack
-        se0_old = stack.head
-        stack = stack.pop()
-        se1 = stack.head
-        se0_new = se0_old.coref(arg0, se1, arg1)
-        stack = stack.push(se0_new)
+        se0 = self.stack[0]
+        se1 = self.stack[1]
+        old, new = se0.coref(arg0, se1, arg1)
+        stack = lstack.stack(parsestacks.StackElement(se.mr.replace(old, new), se.secstack) for se in self.stack)
         return ParseItem(stack, self.queue, False, ('coref', arg1, arg0), self)
 
     def lift(self, ssp, arg_num):
