@@ -168,14 +168,6 @@ class TermsTestCase(unittest.TestCase):
         subterm = terms.from_string('lowest(C,(traverse(D,A),const(D,riverid(mississippi)),loc(C,E)))')
         self.assertTrue(any(subterm.subsumes(f) for s in target.subterms() for f in s.fragments()))
 
-    def test_subsumes_without_identification(self):
-        t1 = terms.from_string('a(A,B)')
-        t2 = terms.from_string('a(A,B)')
-        self.assertTrue(t1.subsumes_without_identification(t2))
-        t1 = terms.from_string('a(A,B)')
-        t2 = terms.from_string('a(A,A)')
-        self.assertFalse(t1.subsumes_without_identification(t2))
-
     def test_marked_terms(self):
         t1 = terms.from_string('a(A)')
         t2 = terms.from_string('b(B)')
