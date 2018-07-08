@@ -90,6 +90,7 @@ next_to(_,_) neighbor
 next_to(_,_) neighboring
 next_to(_,_) next,to
 next_to(_,_) surrounding
+next_to(_,_) for
 traverse(_,_) cross
 traverse(_,_) in
 traverse(_,_) lie
