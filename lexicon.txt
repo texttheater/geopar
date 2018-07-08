@@ -108,7 +108,6 @@ traverse(_,_) flows
 traverse(_,_) go
 traverse(_,_) pass
 
-
 # COMPARATIVES
 higher(_,_) higher
 longer(_,_) longer
