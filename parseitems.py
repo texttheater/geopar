@@ -32,15 +32,15 @@ class ParseItem:
         stack = lstack.stack(parsestacks.StackElement(se.mr.replace(old, new), se.secstack) for se in self.stack)
         return ParseItem(stack, self.queue, False, ('coref', arg1, arg0), self)
 
-    def lift(self, ssp, arg_num):
+    def lift(self, arg_num):
         stack = self.stack
         se_old = stack.head
         stack = stack.pop()
         liftee = stack.head
         stack = stack.pop()
-        se_new = se_old.lift(ssp, arg_num, liftee)
+        se_new = se_old.lift(0, arg_num, liftee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('lift', ssp, arg_num), self)
+        return ParseItem(stack, self.queue, False, ('lift', arg_num), self)
 
     def slift(self):
         stack = self.stack
@@ -52,15 +52,15 @@ class ParseItem:
         stack = stack.push(se_new)
         return ParseItem(stack, self.queue, False, ('slift',), self)
 
-    def drop(self, ssp, arg_num):
+    def drop(self, arg_num):
         stack = self.stack
         droppee = stack.head
         stack = stack.pop()
         se_old = stack.head
         stack = stack.pop()
-        se_new = se_old.drop(ssp, arg_num, droppee)
+        se_new = se_old.drop(0, arg_num, droppee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('drop', ssp, arg_num), self)
+        return ParseItem(stack, self.queue, False, ('drop', arg_num), self)
 
     def sdrop(self):
         stack = self.stack
@@ -132,11 +132,11 @@ class ParseItem:
         if action[0] == 'coref':
             return self.coref(action[1], action[2])
         if action[0] == 'lift':
-            return self.lift(action[1], action[2])
+            return self.lift(action[1])
         if action[0] == 'slift':
             return self.slift()
         if action[0] == 'drop':
-            return self.drop(action[1], action[2])
+            return self.drop(action[1])
         if action[0] == 'sdrop':
             return self.sdrop()
         if action[0] == 'shift':
@@ -164,7 +164,7 @@ class ParseItem:
         # lift
         for arg in range(1, 4):
             try:
-                yield self.lift(0, arg)
+                yield self.lift(arg)
             except (IndexError, parsestacks.IllegalAction):
                 continue
         # slift
@@ -172,10 +172,10 @@ class ParseItem:
             yield self.slift()
         except (IndexError, parsestacks.IllegalAction):
             pass
-        # drop (ssp = 0)
+        # drop
         for arg in range(1, 4):
             try:
-                yield self.drop(0, arg)
+                yield self.drop(arg)
             except (IndexError, parsestacks.IllegalAction):
                 continue
         # sdrop
