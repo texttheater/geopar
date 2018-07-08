@@ -42,6 +42,16 @@ class ParseItem:
         stack = stack.push(se_new)
         return ParseItem(stack, self.queue, False, ('lift', ssp, arg_num), self)
 
+    def slift(self):
+        stack = self.stack
+        se_old = stack.head
+        stack = stack.pop()
+        sliftee = stack.head
+        stack = stack.pop()
+        se_new = se_old.slift(sliftee)
+        stack = stack.push(se_new)
+        return ParseItem(stack, self.queue, False, ('slift',), self)
+
     def drop(self, ssp, arg_num):
         stack = self.stack
         droppee = stack.head
@@ -51,6 +61,16 @@ class ParseItem:
         se_new = se_old.drop(ssp, arg_num, droppee)
         stack = stack.push(se_new)
         return ParseItem(stack, self.queue, False, ('drop', ssp, arg_num), self)
+
+    def sdrop(self):
+        stack = self.stack
+        sdroppee = stack.head
+        stack = stack.pop()
+        se_old = stack.head
+        stack = stack.pop()
+        se_new = se_old.sdrop(sdroppee)
+        stack = stack.push(se_new)
+        return ParseItem(stack, self.queue, False, ('sdrop',), self)
 
     def shift(self, n, term):
         se = parsestacks.new_element(term)
@@ -113,8 +133,12 @@ class ParseItem:
             return self.coref(action[1], action[2])
         if action[0] == 'lift':
             return self.lift(action[1], action[2])
+        if action[0] == 'slift':
+            return self.slift()
         if action[0] == 'drop':
             return self.drop(action[1], action[2])
+        if action[0] == 'sdrop':
+            return self.sdrop()
         if action[0] == 'shift':
             return self.shift(action[1], terms.from_string(action[2]))
         if action[0] == 'skip':
@@ -143,12 +167,22 @@ class ParseItem:
                 yield self.lift(0, arg)
             except (IndexError, parsestacks.IllegalAction):
                 continue
+        # slift
+        try:
+            yield self.slift()
+        except (IndexError, parsestacks.IllegalAction):
+            pass
         # drop (ssp = 0)
         for arg in range(1, 4):
             try:
                 yield self.drop(0, arg)
             except (IndexError, parsestacks.IllegalAction):
                 continue
+        # sdrop
+        try:
+            yield self.sdrop()
+        except (IndexError, parsestacks.IllegalAction):
+            pass
         # shift
         for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
             try:
@@ -167,18 +201,7 @@ class ParseItem:
             yield self.pop()
         except (IndexError, parsestacks.IllegalAction):
             pass
-        # lift (ssp = 1)
-        for arg in range(1, 4):
-            try:
-                yield self.lift(1, arg)
-            except (IndexError, parsestacks.IllegalAction):
-                continue
-        # drop (ssp = 1)
-        for arg in range(1, 4):
-            try:
-                yield self.drop(1, arg)
-            except (IndexError, parsestacks.IllegalAction):
-                continue
+        # TODO remove first argument from drop, lift actions entirely
         # finish
         try:
             yield self.finish()

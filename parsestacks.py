@@ -63,6 +63,25 @@ class StackElement:
         secstack = self.secstack.push(address_droppee)
         return StackElement(mr, secstack)
 
+    def sdrop(self, other):
+        if not other.secstack.is_empty():
+            raise IllegalAction('cannot sister-drop a stack element with a non-empty secondary stack')
+        address = self.secstack.head
+        *address, arg_num, conj_num = address
+        address = tuple(address)
+        target = self.mr.at_address(address)
+        old = target.args[arg_num - 1]
+        if isinstance(old, terms.ConjunctiveTerm):
+            new = terms.ConjunctiveTerm(old.conjuncts + (other.mr,))
+            conj_num = len(new.conjuncts)
+        else:
+            new = terms.ConjunctiveTerm((old, other.mr))
+            conj_num = 2
+        mr = self.mr.replace(old, new)
+        address_droppee = address + (arg_num, conj_num)
+        secstack = self.secstack.push(address_droppee)
+        return StackElement(mr, secstack)
+
     def lift(self, secstack_position, arg_num, other):
         if not other.secstack.is_empty():
             raise IllegalAction('cannot lift a stack element with a non-empty secondary stack')
@@ -88,9 +107,27 @@ class StackElement:
         secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
         return StackElement(mr, secstack)
 
+    def slift(self, other):
+        if not other.secstack.is_empty():
+            raise IllegalAction('cannot sister-lift a stack element with a non-empty secondary stack')
+        address = self.secstack.head
+        *address, arg_num, conj_num = address
+        address = tuple(address)
+        target = self.mr.at_address(address)
+        old = target.args[arg_num - 1]
+        if isinstance(old, terms.ConjunctiveTerm):
+            new = terms.ConjunctiveTerm((other.mr,) + old.conjuncts)
+            conj_num = 1
+        else:
+            new = terms.ConjunctiveTerm((other.mr, old))
+            conj_num = 1
+        mr = self.mr.replace(old, new)
+        address_liftee = address + (arg_num, conj_num)
+        secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
+        return StackElement(mr, secstack)
+
     def coref(self, arg_num, other, other_arg_num):
         # coref is between the targets of the two topmost elements
-        # only the topmost element changes (is this enough??)
         target, _ = self._target_address(0)
         if not isinstance(target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')

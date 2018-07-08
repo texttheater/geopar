@@ -165,7 +165,7 @@ class ItemsTestCase(unittest.TestCase):
             ('skip',),
             ('shift', 1, 'state(A)'),
             ('coref', 2, 1),
-            ('drop', 1, 2),
+            ('sdrop',),
             ('skip',),
             ('shift', 2, "const(A,placeid('mount mckinley'))"),
             ('pop',),
@@ -200,9 +200,9 @@ class ItemsTestCase(unittest.TestCase):
             ('shift', 1, 'lowest(A,B)'),
             ('coref', 1, 1),
             ('lift', 0, 2),
-            ('lift', 1, 2),
+            ('slift',),
+            ('slift',),
             ('pop',),
-            ('lift', 1, 2),
             ('pop',),
             ('coref', 1, 2),
             ('pop',),
@@ -220,6 +220,55 @@ class ItemsTestCase(unittest.TestCase):
         ]
         self._test_action_sequence(words, actions, target_mr)
 
+    def test_example7(self):
+        words = ('what', 'are', 'the', 'major', 'cities', 'in', 'the', 'states', 'through', 'which', 'the', 'major', 'river', 'in', 'virginia', 'runs', '?')
+        target_mr = terms.from_string('answer(A,(major(A),city(A),loc(A,B),state(B),river(C),loc(C,D),const(D,stateid(virginia)),traverse(C,B)))')
+        actions = [
+            ('skip',),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'major(A)'),
+            ('drop', 0, 2),
+            ('shift', 1, 'city(A)'),
+            ('coref', 1, 1),
+            ('pop',),
+            ('coref', 1, 1),
+            ('drop', 0, 2),
+            ('shift', 1, 'loc(A,B)'),
+            ('coref', 1, 1),
+            ('pop',),
+            ('drop', 0, 2),
+            ('skip',),
+            ('shift', 1, 'state(A)'),
+            ('coref', 2, 1),
+            ('pop',),
+            ('drop', 0, 2),
+            ('skip',),
+            ('skip',),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'river(A)'),
+            ('sdrop',),
+            ('shift', 1, 'loc(A,B)'),
+            ('coref', 1, 1),
+            ('sdrop',),
+            ('shift', 1, 'const(A,stateid(virginia))'),
+            ('coref', 2, 1),
+            ('sdrop',),
+            ('shift', 1, 'traverse(A,B)'),
+            ('pop',),
+            ('pop',),
+            ('coref', 1, 1),
+            ('pop',),
+            ('coref', 1, 2),
+            ('pop',),
+            ('drop', 0, 2),
+            ('skip',),
+            ('pop',),
+            ('finish',),
+            ('idle',),
+        ]
+        self._test_action_sequence(words, actions, target_mr)
 
     def _test_action_sequence(self, words, actions, target_mr):
         """Tests that the given action sequence is found.

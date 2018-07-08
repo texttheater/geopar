@@ -26,7 +26,7 @@ def action_sequence(words, target_mr):
     rejector = Rejector(target_mr)
     seen = {str(items[0])}
     while any(not item.finished for item in items):
-        #print(len(items))
+        print(len(items))
         successors = [s for i in items for s in i.successors()]
         items = []
         for s in successors:
