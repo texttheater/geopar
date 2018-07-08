@@ -155,9 +155,9 @@ class ParseItem:
         """Returns all possible successors.
         """
         # coref
-        for ssp1 in range(1, -1, -1):
+        for ssp1 in range(0, 2):
             for arg1 in range(1, 4):
-                for ssp0 in range(1, -1, -1):
+                for ssp0 in range(0, 2):
                     for arg0 in range(1, 4):
                         try:
                             yield self.coref(ssp1, arg1, ssp0, arg0)
