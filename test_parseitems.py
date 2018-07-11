@@ -276,15 +276,14 @@ class ItemsTestCase(unittest.TestCase):
         Tests that given the words and target_mr, the given actions are found
         and allowed by the oracle.
         """
-        item = parseitems.initial(words)
-        rejector = oracle.Rejector(target_mr)
+        beam = oracle.initial_beam(words, target_mr)
+        item = beam.items[0]
         for action in actions:
-            print(item)
+            #print(item)
             item.successor(action)
-            successors = item.successors()
-            successors = [s for s in successors if s.action == action]
-            self.assertTrue(successors, '{} not applied to {}'.format(action, item))
-            self.assertEqual(len(successors), 1)
-            item = successors[0]
-            self.assertFalse(rejector.reject(item), '{} rejected'.format(item))
+            beam = beam.next()
+            beam.items = [s for s in beam.items if s.action == action]
+            self.assertTrue(beam.items, '{} not applied to {}, or rejected'.format(action, item))
+            self.assertEqual(len(beam.items), 1)
+            item = beam.items[0]
         self.assertTrue(item.finished)

@@ -4,6 +4,54 @@ import parseitems
 import util
 
 
+def initial_beam(words, target_mr):
+    items = [parseitems.initial(words)]
+    rejector = Rejector(target_mr)
+    seen = set()
+    return Beam(items, rejector, seen)
+
+
+class Beam:
+
+    def __init__(self, items, rejector, seen):
+        self.items = items
+        self.rejector = rejector
+        self.seen = seen
+
+    def next(self):
+        next_items = []
+        for item in self.items:
+            successors = item.successors()
+            successors = [s for s in successors if self.check_rejector(s)]
+            # TODO fix the siblings check
+            #successors = [s for s in successors if self.check_siblings(s, successors)]
+            successors = [s for s in successors if self.check_seen(s)]
+            next_items.extend(successors)
+        return Beam(next_items, self.rejector, self.seen)
+
+    def check_rejector(self, item):
+        return not self.rejector.reject(item)
+
+    def check_siblings(self, item, siblings):
+        # TODO this probably needs to be even more restrictive
+        if item.action[0] in ('pop', 'skip', 'shift') and any(
+                s.action[0] in ('coref', 'lift', 'slift', 'drop', 'sdrop') for s in siblings):
+            return False
+        if item.action[0] == 'pop' and any(
+                s.action[0] in ('skip', 'shift') for s in siblings):
+            return False
+        return True
+
+    def check_seen(self, item):
+        if item.action[0] == 'idle':
+            return True
+        string = str(item)
+        if string in self.seen:
+            return False
+        self.seen.add(string)
+        return True
+
+
 class Rejector:
 
     def __init__(self, target_mr):
@@ -29,18 +77,10 @@ def action_sequence(words, target_mr):
 
     Returns the first that it finds.
     """
-    items = [parseitems.initial(words)]
-    rejector = Rejector(target_mr)
-    seen = {str(items[0])}
-    while any(not item.finished for item in items):
-        print(len(items))
-        successors = [s for i in items for s in i.successors()]
-        items = []
-        for s in successors:
-            if (s.action == ('idle',) or not str(s) in seen) \
-                and (not rejector.reject(s)):
-                items.append(s)
-                seen.add(str(s))
-    if not items:
+    beam = initial_beam(words, target_mr)
+    while any(not item.finished for item in beam.items):
+        print(len(beam.items))
+        beam = beam.next()
+    if not beam.items:
         raise ValueError('no action sequence found')
-    return items[0].action_sequence()
+    return beam.items[0].action_sequence()
