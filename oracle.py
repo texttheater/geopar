@@ -1,4 +1,7 @@
+import collections
+import lexicon
 import parseitems
+import util
 
 
 class Rejector:
@@ -6,10 +9,14 @@ class Rejector:
     def __init__(self, target_mr):
         self.target_mr = target_mr
         self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
+        self.elements = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
 
     def reject(self, item, siblings=None):
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
+        elements = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
+        if not util.issubset(elements, self.elements):
+            return True
         # TODO enforce consistency across stack elements?
         for se in item.stack:
             if not any(se.mr.subsumes(f) for f in self.fragments):
