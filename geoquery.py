@@ -2,7 +2,6 @@
 """
 
 
-import lexicon
 import config
 
 
@@ -30,7 +29,7 @@ def integrate_allowed(term, arg_num):
     return False
 
 
-def skip_allowed(queue):
+def skip_allowed(queue, lex):
 	# This is turning into a farce:
     if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'has', 'state', 'least', 'river', 'rivers', 'through', 'square', 'kilometers', 'whose', 'major', 'total', 'country', 'neighboring', 'for'):
         return True
@@ -39,6 +38,6 @@ def skip_allowed(queue):
             token = tuple(queue[i] for i in range(token_length))
         except IndexError:
             break
-        if lexicon.meanings(token):
+        if lex.meanings(token):
             return False
     return True

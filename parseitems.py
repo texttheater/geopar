@@ -80,8 +80,8 @@ class ParseItem:
             queue = queue.pop()
         return ParseItem(stack, queue, False, ('shift', n, term.to_string()), self)
 
-    def skip(self):
-        if not geoquery.skip_allowed(self.queue):
+    def skip(self, lex):
+        if not geoquery.skip_allowed(self.queue, lex):
             # HACK: ideally we'd like to allow skipping any word and let the
             # learning algorithm figure out when not to do it. But that makes
             # the search space explode.
@@ -128,7 +128,7 @@ class ParseItem:
             raise parsestacks.IllegalAction('not finished')
         return ParseItem(self.stack, self.queue, True, ('idle',), self)
 
-    def successor(self, action):
+    def successor(self, action, lex):
         if action[0] == 'coref':
             return self.coref(action[1], action[2], action[3], action[4])
         if action[0] == 'lift':
@@ -142,7 +142,7 @@ class ParseItem:
         if action[0] == 'shift':
             return self.shift(action[1], terms.from_string(action[2]))
         if action[0] == 'skip':
-            return self.skip()
+            return self.skip(lex)
         if action[0] == 'pop':
             return self.pop()
         if action[0] == 'finish':
@@ -151,7 +151,7 @@ class ParseItem:
             return self.idle()
         raise ValueError('unknown action type: ' + action[0])
 
-    def successors(self):
+    def successors(self, lex):
         """Returns all possible successors.
         """
         # coref
@@ -191,11 +191,11 @@ class ParseItem:
                 token = tuple(self.queue[i] for i in range(token_length))
             except IndexError: # queue too short
                 break
-            for meaning in lexicon.meanings(token):
+            for meaning in lex.meanings(token):
                 yield self.shift(token_length, meaning)
         # skip
         try:
-            yield self.skip()
+            yield self.skip(lex)
         except (IndexError, parsestacks.IllegalAction):
             pass
         # pop

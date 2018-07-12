@@ -1,3 +1,4 @@
+import lexicon
 import oracle
 import parseitems
 import terms
@@ -276,11 +277,12 @@ class ItemsTestCase(unittest.TestCase):
         Tests that given the words and target_mr, the given actions are found
         and allowed by the oracle.
         """
-        beam = oracle.initial_beam(words, target_mr)
+        lex = lexicon.read_lexicon('lexicon.txt')
+        beam = oracle.initial_beam(words, target_mr, lex)
         item = beam.items[0]
         for action in actions:
             #print(item)
-            item.successor(action)
+            item.successor(action, lex)
             beam = beam.next()
             beam.items = [s for s in beam.items if s.action == action]
             self.assertTrue(beam.items, '{} not applied to {}, or rejected'.format(action, item))

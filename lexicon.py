@@ -12,18 +12,20 @@ def read_lexicon(path):
             mr, word = line.rsplit(maxsplit=1)
             tokens = tuple(word.split(','))
             word_term_map[tokens].append(mr)
-    return word_term_map
+    return Lexicon(word_term_map)
 
 
-_word_term_map = read_lexicon(os.path.join(os.path.dirname(__file__), 'lexicon.txt'))
+class Lexicon:
 
+    def __init__(self, word_term_map):
+        self.word_term_map = word_term_map
 
-def meanings(word):
-    """Returns the known meanings of a word.
-    """
-    if word in _word_term_map:
-        return (terms.from_string(s) for s in _word_term_map[word])
-    return ()
+    def meanings(self, word):
+        """Returns the known meanings of a word.
+        """
+        if word in self.word_term_map:
+            return (terms.from_string(s) for s in self.word_term_map[word])
+        return ()
 
 
 def lexical_subterms(term):

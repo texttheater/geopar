@@ -4,30 +4,31 @@ import parseitems
 import util
 
 
-def initial_beam(words, target_mr):
+def initial_beam(words, target_mr, lex):
     items = [parseitems.initial(words)]
     rejector = Rejector(target_mr)
     seen = set()
-    return Beam(items, rejector, seen)
+    return Beam(items, rejector, seen, lex)
 
 
 class Beam:
 
-    def __init__(self, items, rejector, seen):
+    def __init__(self, items, rejector, seen, lex):
         self.items = items
         self.rejector = rejector
         self.seen = seen
+        self.lex = lex
 
     def next(self):
         next_items = []
         for item in self.items:
-            successors = item.successors()
+            successors = item.successors(self.lex)
             successors = [s for s in successors if self.check_rejector(s)]
             # TODO fix the siblings check
             successors = [s for s in successors if self.check_siblings(s, successors)]
             successors = [s for s in successors if self.check_seen(s)]
             next_items.extend(successors)
-        return Beam(next_items, self.rejector, self.seen)
+        return Beam(next_items, self.rejector, self.seen, self.lex)
 
     def check_rejector(self, item):
         return not self.rejector.reject(item)
@@ -78,7 +79,7 @@ def action_sequence(words, target_mr):
 
     Returns the first that it finds.
     """
-    beam = initial_beam(words, target_mr)
+    beam = initial_beam(words, target_mr, lexicon.read_lexicon('lexicon.txt'))
     while any(not item.finished for item in beam.items):
         print(len(beam.items))
         beam = beam.next()

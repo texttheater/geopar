@@ -24,6 +24,7 @@ class LexiconCoverageTestCase(unittest.TestCase):
         the NLU that in the lexicon is associated with that lexical term.
         """
         missing_terms = []
+        lex = lexicon.read_lexicon('lexicon.txt')
         for words, mr in data.geo880_train():
             printed = False
             self.assertEqual(mr.functor_name, 'answer')
@@ -35,7 +36,7 @@ class LexiconCoverageTestCase(unittest.TestCase):
                 bigrams = util.ngrams(2, words)
                 trigrams = util.ngrams(3, words)
                 for word in itertools.chain(unigrams, bigrams, trigrams):
-                    for term in lexicon.meanings(word):
+                    for term in lex.meanings(word):
                         if term.equivalent(lexterm):
                             word_found = True
                             break
