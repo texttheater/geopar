@@ -201,8 +201,14 @@ class ComplexTerm(Term):
     def augment(self, predicate_counter):
         pred = (self.functor_name, len(self.args))
         predicate_counter[pred] += 1
-        functor_name = self.functor_name + str(predicate_counter[pred])
-        args = tuple(a.augment(predicate_counter) for a in self.args)
+        if pred == ('answer', 2):
+            functor_name = self.functor_name
+        else:
+            functor_name = self.functor_name + str(predicate_counter[pred])
+        if pred == ('const', 2):
+            args = self.args
+        else:
+            args = tuple(a.augment(predicate_counter) for a in self.args)
         return ComplexTerm(functor_name, args)
 
 
