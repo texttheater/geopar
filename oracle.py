@@ -24,7 +24,7 @@ class Beam:
             successors = item.successors()
             successors = [s for s in successors if self.check_rejector(s)]
             # TODO fix the siblings check
-            #successors = [s for s in successors if self.check_siblings(s, successors)]
+            successors = [s for s in successors if self.check_siblings(s, successors)]
             successors = [s for s in successors if self.check_seen(s)]
             next_items.extend(successors)
         return Beam(next_items, self.rejector, self.seen)
@@ -59,7 +59,8 @@ class Rejector:
         self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
         self.elements = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
 
-    def reject(self, item, siblings=None):
+    def reject(self, item):
+        # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
         elements = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
