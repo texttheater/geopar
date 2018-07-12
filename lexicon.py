@@ -35,7 +35,7 @@ def lexical_subterms(term):
     and 2) all other complex terms, but with all-variable arguments.
     """
     if isinstance(term, terms.ComplexTerm):
-        if term.functor_name == 'const' and len(term.args) == 2:
+        if term.functor_name.startswith('const') and len(term.args) == 2:
             yield term
         else:
             args = []

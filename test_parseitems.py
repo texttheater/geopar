@@ -1,3 +1,4 @@
+import augment
 import lexicon
 import oracle
 import parseitems
@@ -14,18 +15,18 @@ class ItemsTestCase(unittest.TestCase):
             ('skip',),
             ('skip',),
             ('skip',),
-            ('shift', 1, 'capital(A,B)'),
+            ('shift', 1, 'capital1(A,B)'),
             ('coref', 0, 1, 0, 2),
             ('drop', 2),
             ('skip',),
             ('skip',),
-            ('shift', 1, 'state(A)'),
+            ('shift', 1, 'state1(A)'),
             ('coref', 0, 1, 0, 1),
             ('skip',),
             ('skip',),
-            ('shift', 1, 'largest(A,B)'),
+            ('shift', 1, 'largest1(A,B)'),
             ('lift', 2),
-            ('shift', 1, 'population(A,B)'),
+            ('shift', 1, 'population1(A,B)'),
             ('coref', 0, 1, 0, 1),
             ('coref', 1, 1, 0, 2),
             ('sdrop',),
@@ -51,21 +52,21 @@ class ItemsTestCase(unittest.TestCase):
             ('skip',),
             ('skip',),
             ('skip',),
-            ('shift', 1, 'highest(A,B)'),
+            ('shift', 1, 'highest_1(A,B)'),
             ('coref', 0, 1, 0, 1),
             ('drop', 2),
-            ('shift', 1, 'place(A)'),
+            ('shift', 1, 'place_1(A)'),
             ('coref', 0, 1, 0, 1),
             ('drop', 2),
-            ('shift', 1, 'loc(A,B)'),
+            ('shift', 1, 'loc_1(A,B)'),
             ('coref', 0, 1, 0, 1),
             ('sdrop',),
             ('skip',),
-            ('shift', 1, 'state(A)'),
+            ('shift', 1, 'state_1(A)'),
             ('coref', 0, 2, 0, 1),
             ('sdrop',),
             ('skip',),
-            ('shift', 1, 'const(A,stateid(oregon))'),
+            ('shift', 1, 'const_1(A,stateid(oregon))'),
             ('coref', 0, 1, 0, 1),
             ('sdrop',),
             ('skip',),
@@ -277,11 +278,11 @@ class ItemsTestCase(unittest.TestCase):
         Tests that given the words and target_mr, the given actions are found
         and allowed by the oracle.
         """
-        lex = lexicon.read_lexicon('lexicon.txt')
-        beam = oracle.initial_beam(words, target_mr, lex)
+        lex = augment.AugmentingLexicon(lexicon.read_lexicon('lexicon.txt'), target_mr)
+        beam = oracle.initial_beam(words, target_mr.augment(), lex)
         item = beam.items[0]
         for action in actions:
-            #print(item)
+            print(item)
             item.successor(action, lex)
             beam = beam.next()
             beam.items = [s for s in beam.items if s.action == action]

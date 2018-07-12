@@ -39,7 +39,7 @@ import util
 
 _VARIABLE_PATTERN = re.compile('[A-Z]')
 _ANONYMOUS_VARIABLE_PATTERN = re.compile('_')
-_COMPLEX_TERM_START_PATTERN = re.compile('(?P<functor_name>[a-z][a-z_]*)\(')
+_COMPLEX_TERM_START_PATTERN = re.compile('(?P<functor_name>[a-z][a-z_0-9]*)\(')
 _COMMA_PATTERN = re.compile(', ?')
 _COMPLEX_TERM_END_PATTERN = re.compile('\)')
 _ATOM_PATTERN = re.compile('[a-z?]+')
@@ -77,7 +77,7 @@ class Term:
             raise IndexError()
         return self
 
-    def augment(self, predicate_counter):
+    def augment(self, predicate_counter=None):
         return self
 
 
@@ -198,13 +198,15 @@ class ComplexTerm(Term):
             subterm = arg
         return subterm.at_address(address[2:])
 
-    def augment(self, predicate_counter):
+    def augment(self, predicate_counter=None):
+        if predicate_counter is None:
+            predicate_counter = collections.Counter()
         pred = (self.functor_name, len(self.args))
         predicate_counter[pred] += 1
         if pred == ('answer', 2):
             functor_name = self.functor_name
         else:
-            functor_name = self.functor_name + str(predicate_counter[pred])
+            functor_name = self.functor_name + '_' + str(predicate_counter[pred])
         if pred == ('const', 2):
             args = self.args
         else:
@@ -255,7 +257,9 @@ class ConjunctiveTerm(Term):
             return new
         return ConjunctiveTerm(c.replace(old, new) for c in self.conjuncts)
 
-    def augment(self, predicate_counter):
+    def augment(self, predicate_counter=None):
+        if predicate_counter is None:
+            predicate_counter = collections.Counter()
         return ConjunctiveTerm(c.augment(predicate_counter) for c in self.conjuncts)
 
 

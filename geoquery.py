@@ -2,35 +2,38 @@
 """
 
 
+import augment
 import config
 
 
 def coref_allowed(term, arg_num):
-    if term.functor_name in ('most', 'fewest'):
+    name = augment.unaugment(term.functor_name)
+    if name in ('most', 'fewest'):
         return arg_num in (1, 2)
-    if term.functor_name in ('sum', 'count'):
+    if name in ('sum', 'count'):
         return arg_num in (1, 3)
-    if term.functor_name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
+    if name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
         return arg_num == 1
     return True
 
 
 def integrate_allowed(term, arg_num):
-    if term.functor_name in ('most', 'fewest'):
+    name = augment.unaugment(term.functor_name)
+    if name in ('most', 'fewest'):
         return arg_num == 3
-    if term.functor_name in ('sum', 'count'):
+    if name in ('sum', 'count'):
         return arg_num == 2
-    if term.functor_name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
+    if name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
         return arg_num == 2
-    if term.functor_name == '\+':
+    if name == '\+':
         return arg_num == 1
-    if len(term.functor_name) == 1: # single-letter names for testing
+    if len(name) == 1: # single-letter names for testing
         return True
     return False
 
 
 def skip_allowed(queue, lex):
-	# This is turning into a farce:
+    # This is turning into a farce:
     if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'has', 'state', 'least', 'river', 'rivers', 'through', 'square', 'kilometers', 'whose', 'major', 'total', 'country', 'neighboring', 'for'):
         return True
     for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
@@ -38,6 +41,6 @@ def skip_allowed(queue, lex):
             token = tuple(queue[i] for i in range(token_length))
         except IndexError:
             break
-        if lex.meanings(token):
+        if tuple(lex.meanings(token)):
             return False
     return True
