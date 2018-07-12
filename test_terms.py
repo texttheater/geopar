@@ -1,3 +1,4 @@
+import collections
 import lstack
 import terms
 import unittest
@@ -180,3 +181,9 @@ class TermsTestCase(unittest.TestCase):
         self.assertEqual(t3.to_string(marked_terms=marked_terms), '(a(A),[0]b(B))')
         marked_terms = (t2,t1)
         self.assertEqual(t3.to_string(marked_terms=marked_terms), '([1]a(A),[0]b(B))')
+
+    def test_augment(self):
+        t = terms.from_string('answer(A,longest(A,(river(A),traverse(A,B),state(B),next_to(B,C),most(C,D,(state(C),next_to(C,D),state(D))))))')
+        counter = collections.Counter()
+        u = t.augment(counter)
+        self.assertEqual(u.to_string(), 'answer1(A,longest1(A,(river1(A),traverse1(A,B),state1(B),next_to1(B,C),most1(C,D,(state2(C),next_to2(C,D),state3(D))))))')

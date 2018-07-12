@@ -77,6 +77,9 @@ class Term:
             raise IndexError()
         return self
 
+    def augment(self, predicate_counter):
+        return self
+
 
 class Variable(Term):
 
@@ -178,8 +181,8 @@ class ComplexTerm(Term):
     def replace(self, old, new):
         if self == old:
             return new
-        args_new = [arg.replace(old, new) for arg in self.args]
-        return ComplexTerm(self.functor_name, args_new)
+        args = (arg.replace(old, new) for arg in self.args)
+        return ComplexTerm(self.functor_name, args)
 
     def at_address(self, address):
         if len(address) == 0:
@@ -194,6 +197,13 @@ class ComplexTerm(Term):
                 raise IndexError()
             subterm = arg
         return subterm.at_address(address[2:])
+
+    def augment(self, predicate_counter):
+        pred = (self.functor_name, len(self.args))
+        predicate_counter[pred] += 1
+        functor_name = self.functor_name + str(predicate_counter[pred])
+        args = tuple(a.augment(predicate_counter) for a in self.args)
+        return ComplexTerm(functor_name, args)
 
 
 class ConjunctiveTerm(Term):
@@ -237,8 +247,10 @@ class ConjunctiveTerm(Term):
     def replace(self, old, new):
         if self == old:
             return new
-        conjuncts_new = [conj.replace(old, new) for conj in self.conjuncts]
-        return ConjunctiveTerm(conjuncts_new)
+        return ConjunctiveTerm(c.replace(old, new) for c in self.conjuncts)
+
+    def augment(self, predicate_counter):
+        return ConjunctiveTerm(c.augment(predicate_counter) for c in self.conjuncts)
 
 
 class Number(Term):
