@@ -12,8 +12,6 @@ class AugmentingLexicon:
         self.lex = lex
         mr = target_mr.augment()
         self.lst = list(lexicon.lexical_subterms(mr))
-        for l in self.lst:
-            print(l.to_string())
         self.lst = [terms.from_string(l.to_string()) for l in self.lst] # undo variable bindings
 
     def meanings(self, word):
