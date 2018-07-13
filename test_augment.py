@@ -12,28 +12,28 @@ class AugmentTestCase(unittest.TestCase):
         alex = augment.AugmentingLexicon(lex, t)
         word = ('longest',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['longest1(A,B)'])
+        self.assertEqual(meanings, ['longest_1(A,B)'])
         word = ('river',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['river1(A)'])
+        self.assertEqual(meanings, ['river_1(A)'])
         word = ('passes',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['traverse1(A,B)'])
+        self.assertEqual(meanings, ['traverse_1(A,B)'])
         word = ('states',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['state1(A)', 'state2(A)', 'state3(A)'])
+        self.assertEqual(meanings, ['state_1(A)', 'state_2(A)', 'state_3(A)'])
         word = ('border',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['next_to1(A,B)', 'next_to2(A,B)'])
+        self.assertEqual(meanings, ['next_to_1(A,B)', 'next_to_2(A,B)'])
         word = ('state',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['state1(A)', 'state2(A)', 'state3(A)'])
+        self.assertEqual(meanings, ['state_1(A)', 'state_2(A)', 'state_3(A)'])
         word = ('borders',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['next_to1(A,B)', 'next_to2(A,B)'])
+        self.assertEqual(meanings, ['next_to_1(A,B)', 'next_to_2(A,B)'])
         word = ('most',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['most1(A,B,C)'])
+        self.assertEqual(meanings, ['most_1(A,B,C)'])
 
     def test_augment2(self):
         lex = lexicon.read_lexicon('lexicon.txt')
@@ -41,19 +41,19 @@ class AugmentTestCase(unittest.TestCase):
         alex = augment.AugmentingLexicon(lex, t)
         word = ('states',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['state1(A)'])
+        self.assertEqual(meanings, ['state_1(A)'])
         word = ('washed',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['traverse1(A,B)'])
+        self.assertEqual(meanings, ['traverse_1(A,B)'])
         word = ('mississippi',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['const1(A,riverid(mississippi))'])
+        self.assertEqual(meanings, ['const_1(A,riverid(mississippi))'])
         word = ('has',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['loc1(A,B)'])
+        self.assertEqual(meanings, ['loc_1(A,B)'])
         word = ('lowest',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['lowest1(A,B)'])
+        self.assertEqual(meanings, ['lowest_1(A,B)'])
         word = ('point',)
         meanings = [m.to_string() for m in alex.meanings(word)]
-        self.assertEqual(meanings, ['place1(A)'])
+        self.assertEqual(meanings, ['place_1(A)'])

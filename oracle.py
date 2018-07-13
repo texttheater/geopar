@@ -1,6 +1,7 @@
-import collections
+import augment
 import lexicon
 import parseitems
+import random
 import util
 
 
@@ -34,13 +35,19 @@ class Beam:
         return not self.rejector.reject(item)
 
     def check_siblings(self, item, siblings):
+        #for sibling in siblings:
+        #    print('~', sibling)
+        #print()
         # TODO this probably needs to be even more restrictive
-        if item.action[0] in ('pop', 'skip', 'shift') and any(
-                s.action[0] in ('coref', 'lift', 'slift', 'drop', 'sdrop') for s in siblings):
-            return False
-        if item.action[0] == 'pop' and any(
-                s.action[0] in ('skip', 'shift') for s in siblings):
-            return False
+        #if item.action[0] in ('pop', 'skip', 'shift') and any(
+        #        s.action[0] in ('coref', 'lift', 'slift', 'drop', 'sdrop') for s in siblings):
+        #    return False
+        #if item.action[0] == 'pop' and any(
+        #        s.action[0] in ('skip', 'shift') for s in siblings):
+        #    return False
+        #if item.action[0] in ('skip', 'shift') and any(
+        #    s.action[0] in ('drop', 'lift', 'sdrop', 'slift') for s in siblings):
+        #    return False
         return True
 
     def check_seen(self, item):
@@ -58,20 +65,24 @@ class Rejector:
     def __init__(self, target_mr):
         self.target_mr = target_mr
         self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
-        self.elements = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
 
     def reject(self, item):
         # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
-        elements = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
-        if not util.issubset(elements, self.elements):
-            return True
-        # TODO enforce consistency across stack elements?
-        for se in item.stack:
-            if not any(se.mr.subsumes(f) for f in self.fragments):
+        # fragment check (false negatives (and positives?) unless mr is augmented!)
+        fragments = tuple(find_fragment(se.mr, self.fragments) for se in item.stack)
+        bindings = {}
+        for se, fr in zip(item.stack, fragments):
+            if not se.mr.subsumes(fr, bindings):
                 return True
         return False
+
+
+def find_fragment(mr, fragments):
+    for fr in fragments:
+        if mr.equivalent(fr):
+            return fr
 
 
 def action_sequence(words, target_mr):
@@ -79,10 +90,12 @@ def action_sequence(words, target_mr):
 
     Returns the first that it finds.
     """
-    beam = initial_beam(words, target_mr, lexicon.read_lexicon('lexicon.txt'))
-    while any(not item.finished for item in beam.items):
-        print(len(beam.items))
+    lex = augment.AugmentingLexicon(lexicon.read_lexicon('lexicon.txt'), target_mr)
+    beam = initial_beam(words, target_mr.augment(), lex)
+    while beam.items:
+        print(len(beam.items), random.choice(beam.items))
         beam = beam.next()
-    if not beam.items:
-        raise ValueError('no action sequence found')
-    return beam.items[0].action_sequence()
+        finished = [i for i in beam.items if i.finished]
+        if finished:
+            return finished[0].action_sequence()
+    raise ValueError('no action sequence found')

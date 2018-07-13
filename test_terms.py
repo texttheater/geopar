@@ -68,7 +68,6 @@ class TermsTestCase(unittest.TestCase):
             terms.from_string('answer(A,(state(A),population(D,E)))').subsumes(
             terms.from_string('answer(C,(state(S),population(S,P)))')))
 
-
     def test_equivalent(self):
         self.assertTrue(
             terms.from_string('X').equivalent(
@@ -104,13 +103,17 @@ class TermsTestCase(unittest.TestCase):
             terms.from_string('answer(A,(capital(B,A),largest(C,(state(A),population(D,E)))))').equivalent(
             terms.from_string('answer(C,(capital(S,C),largest(P,(state(S),population(S,P)))))')))
 
-    def test_string_roundtrip(self):
+    def test_string_roundtrip1(self):
         t1 = terms.from_string('a(A, A)')
         t2 = terms.from_string('a(B, B)')
         self.assertTrue(t1.equivalent(t2))
         t1 = t1.to_string()
         t1 = terms.from_string(t1)
         self.assertTrue(t1.equivalent(t2))
+
+    def test_string_roundtrip2(self):
+        t1 = terms.from_string('\+_1a(b)')
+        self.assertEqual(t1.to_string(), '\+_1a(b)')
 
     def test_address(self):
         t = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')

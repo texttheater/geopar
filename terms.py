@@ -56,7 +56,7 @@ _LIST_START_PATTERN = re.compile('\[')
 _LIST_END_PATTERN = re.compile(']')
 _CONJUNCTIVE_TERM_START_PATTERN = re.compile('\(')
 _CONJUNCTIVE_TERM_END_PATTERN = re.compile('\)')
-_NEGATION_START_PATTERN = re.compile(r'\\\+ ?')
+_NEGATION_START_PATTERN = re.compile(r'(?P<functor_name>\\\+(_\d+)?) ?')
 
 
 def _unquote(quoted_atom):
@@ -153,11 +153,11 @@ class ComplexTerm(Term):
                 prefix = '[{}]'.format(i)
         if self.functor_name == 'parse' and len(self.args) == 2:
             sep = ', ' # quirk in the data
-        elif self.functor_name == '\\+' and len(self.args) == 1:
+        elif self.functor_name.startswith('\\+') and len(self.args) == 1:
             if isinstance(self.args[0], ConjunctiveTerm):
-                return prefix + '\\+ ' + self.args[0].to_string(var_name_dict, marked_terms)
+                return prefix + self.functor_name + ' ' + self.args[0].to_string(var_name_dict, marked_terms)
             else:
-                return prefix + '\\+' + self.args[0].to_string(var_name_dict, marked_terms)
+                return prefix + self.functor_name + self.args[0].to_string(var_name_dict, marked_terms)
         else:
             sep = ','
         return prefix + self.functor_name + '(' + sep.join(arg.to_string(var_name_dict, marked_terms) for arg in self.args) + ')'
@@ -386,9 +386,10 @@ def read_term(string, name_var_dict=None):
             conjuncts.append(conjunct)
     match = _NEGATION_START_PATTERN.match(string)
     if match:
+        functor_name = match.group('functor_name')
         rest = string[match.end():]
         scope, rest = read_term(rest, name_var_dict)
-        return ComplexTerm('\\+', [scope]), rest
+        return ComplexTerm(functor_name, [scope]), rest
     raise RuntimeError("couldn't parse term suffix: " + string)
 
 

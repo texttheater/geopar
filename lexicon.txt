@@ -54,6 +54,8 @@ elevation(_,_) height
 elevation(_,_) high
 high_point(_,_) high,point
 high_point(_,_) high,points
+# HACK
+high_point(_,_) that
 len(_,_) length
 len(_,_) long
 population(_,_) many,citizens

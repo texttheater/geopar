@@ -34,7 +34,7 @@ def integrate_allowed(term, arg_num):
 
 def skip_allowed(queue, lex):
     # This is turning into a farce:
-    if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'has', 'state', 'least', 'river', 'rivers', 'through', 'square', 'kilometers', 'whose', 'major', 'total', 'country', 'neighboring', 'for'):
+    if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'has', 'state', 'states', 'least', 'river', 'rivers', 'through', 'square', 'kilometers', 'whose', 'major', 'total', 'country', 'neighboring', 'for', 'points', 'that'):
         return True
     for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
         try:
