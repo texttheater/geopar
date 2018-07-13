@@ -1,3 +1,4 @@
+import data
 import lstack
 import terms
 import unittest
@@ -147,14 +148,26 @@ class TermsTestCase(unittest.TestCase):
         self.assertEqual(pred, gold)
 
     def test_fragments2(self):
-        term = terms.from_string('a(a,(b,c))')
-        gold = ['a(a,b)', 'a(a,(b,c))', 'a(a,c)']
+        term = terms.from_string('a(a(d),(b(e),c(f)))')
+        gold = ['a(A,B)', 'a(A,b(e))', 'a(A,(b(e),c(f)))', 'a(A,c(f))', 'a(a(d),A)', 'a(a(d),b(e))', 'a(a(d),(b(e),c(f)))', 'a(a(d),c(f))']
         pred = [f.to_string() for f in term.fragments()]
         self.assertEqual(pred, gold)
 
     def test_fragments3(self):
         term = terms.from_string('a(A,(b,c))')
-        gold = ['a(A,b)', 'a(A,(b,c))', 'a(A,c)']
+        gold = ['a(A,B)', 'a(A,b)', 'a(A,(b,c))', 'a(A,c)']
+        pred = [f.to_string() for f in term.fragments()]
+        self.assertEqual(pred, gold)
+
+    def test_fragments4(self):
+        term = terms.from_string('a(a,(b,c))')
+        gold = ['a(a,b)', 'a(a,(b,c))', 'a(a,c)']
+        pred = [f.to_string() for f in term.fragments()]
+        self.assertEqual(pred, gold)
+
+    def test_fragments5(self):
+        term = terms.from_string('a(A,(b,c))')
+        gold = ['a(A,B)', 'a(A,b)', 'a(A,(b,c))', 'a(A,c)']
         pred = [f.to_string() for f in term.fragments()]
         self.assertEqual(pred, gold)
 
@@ -184,7 +197,13 @@ class TermsTestCase(unittest.TestCase):
     def test_augment(self):
         t = terms.from_string('answer(A,longest(A,(river(A),traverse(A,B),state(B),next_to(B,C),most(C,D,(state(C),next_to(C,D),state(D))))))')
         u = t.augment()
-        self.assertEqual(u.to_string(), 'answer(A,longest1(A,(river1(A),traverse1(A,B),state1(B),next_to1(B,C),most1(C,D,(state2(C),next_to2(C,D),state3(D))))))')
+        self.assertEqual(u.to_string(), 'answer(A,longest_1(A,(river_1(A),traverse_1(A,B),state_1(B),next_to_1(B,C),most_1(C,D,(state_2(C),next_to_2(C,D),state_3(D))))))')
         t = terms.from_string('answer(A,lowest(B,(state(A),traverse(C,A),const(C,riverid(mississippi)),loc(B,A),place(B))))')
         u = t.augment()
-        self.assertEqual(u.to_string(), 'answer(A,lowest1(B,(state1(A),traverse1(C,A),const1(C,riverid(mississippi)),loc1(B,A),place1(B))))')
+        self.assertEqual(u.to_string(), 'answer(A,lowest_1(B,(state_1(A),traverse_1(C,A),const_1(C,riverid(mississippi)),loc_1(B,A),place_1(B))))')
+
+    def test_compute_all_fragments(self):
+        count = 0
+        for words, mr in data.geo880_train():
+            count += len(list(f for s in mr.subterms() for f in s.fragments()))
+        print(count, 'fragments')

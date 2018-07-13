@@ -28,10 +28,17 @@ All term classes (except List) implement the replace method.
 term.replace(old, new) where old and new are terms returns a new version of
 term where all token-identical occurrences of old have been replaced with new.
 Note that equivalence implies token-identity only for variables.
+
+Fragments
+=========
+
+A "fragment" F of a term T is a "partially constructed" version of T, which may
+yet be turned into T by adding additional conjuncts to arguments in F.
 """
 
 
 import collections
+import itertools
 import lstack
 import re
 import util
@@ -161,8 +168,8 @@ class ComplexTerm(Term):
             yield from arg.subterms()
 
     def fragments(self):
-        for args_fragments in fragments(self.args):
-            yield ComplexTerm(self.functor_name, args_fragments)
+        for fragments in args_fragments(self.args):
+            yield ComplexTerm(self.functor_name, fragments)
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ComplexTerm):
@@ -234,11 +241,11 @@ class ConjunctiveTerm(Term):
     def fragments(self):
         for start in range(0, len(self.conjuncts)):
             for end in range(start + 1, len(self.conjuncts) + 1):
-                for conjuncts_fragments in fragments(self.conjuncts[start:end]):
-                    if len(conjuncts_fragments) == 1:
-                        yield conjuncts_fragments[0]
+                for fragments in conjuncts_fragments(self.conjuncts[start:end]):
+                    if len(fragments) == 1:
+                        yield fragments[0]
                     else:
-                        yield ConjunctiveTerm(conjuncts_fragments)
+                        yield ConjunctiveTerm(fragments)
 
     def subsumes(self, other, bindings=None):
         if not isinstance(other, ConjunctiveTerm):
@@ -404,11 +411,23 @@ def make_var_name_dict():
     return collections.defaultdict(lambda: next(names))
 
 
-def fragments(args):
+def args_fragments(args):
     if args == ():
         yield ()
     else:
-        for f in args[0].fragments():
-            for g in fragments(args[1:]):
+        if isinstance(args[0], ComplexTerm) or isinstance(args[0], ConjunctiveTerm):
+            additional_arg_fragments = (from_string('A'),)
+        else:
+            additional_arg_fragments = ()
+        for f in itertools.chain(additional_arg_fragments, args[0].fragments()):
+            for g in args_fragments(args[1:]):
                 yield (f,) + g
 
+
+def conjuncts_fragments(conjuncts):
+    if conjuncts == ():
+        yield ()
+    else:
+        for f in conjuncts[0].fragments():
+            for g in conjuncts_fragments(conjuncts[1:]):
+                yield (f,) + g
