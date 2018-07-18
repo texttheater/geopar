@@ -39,6 +39,7 @@ class Beam:
         #for sibling in siblings:
         #    print('~', sibling)
         #print()
+        # These tests don't work:
         # TODO this probably needs to be even more restrictive
         #if item.action[0] in ('pop', 'skip', 'shift') and any(
         #        s.action[0] in ('coref', 'lift', 'slift', 'drop', 'sdrop') for s in siblings):
@@ -46,9 +47,9 @@ class Beam:
         #if item.action[0] == 'pop' and any(
         #        s.action[0] in ('skip', 'shift') for s in siblings):
         #    return False
-        #if item.action[0] in ('skip', 'shift') and any(
-        #    s.action[0] in ('drop', 'lift', 'sdrop', 'slift') for s in siblings):
-        #    return False
+        if item.action[0] in ('skip', 'shift') and any(
+            s.action[0] in ('drop', 'lift', 'sdrop', 'slift') for s in siblings):
+            return False
         return True
 
     def check_seen(self, item):
