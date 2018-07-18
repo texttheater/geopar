@@ -289,6 +289,47 @@ class ItemsTestCase(unittest.TestCase):
 #            ('sh
 #        ]
 
+    def test_example8(self):
+        words = 'which is the lowest point of the states that the mississippi runs through ?'.split()
+        target_mr = terms.from_string('answer(A,lowest(B,(place(B),loc(B,A),state(A),const(C,riverid(mississippi)),traverse(C,A))))')
+        actions = [
+            ('skip',),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'lowest_1(A,B)'),
+            ('drop', 2),
+            ('shift', 1, 'place_1(A)'),
+            ('coref', 0, 1, 0, 1),
+            ('drop', 2),
+            ('shift', 1, 'loc_1(A,B)'),
+            ('coref', 0, 1, 0, 1),
+            ('coref', 2, 1, 0, 2),
+            ('sdrop',),
+            ('skip',),
+            ('shift', 1, 'state_1(A)'),
+            ('coref', 0, 2, 0, 1),
+            ('sdrop',),
+            ('skip',),
+            ('skip',),
+            ('shift', 1, 'const_1(A,riverid(mississippi))'),
+            ('sdrop',),
+            ('shift', 1, 'traverse_1(A,B)'),
+            ('coref', 0, 1, 0, 1),
+            ('pop',),
+            ('coref', 0, 1, 0, 2),
+            ('sdrop',),
+            ('skip',),
+            ('skip',),
+            ('pop',),
+            ('pop',),
+            ('pop',),
+            ('pop',),
+            ('pop',),
+            ('finish',),
+            ('idle',),
+        ]
+        self._test_action_sequence(words, actions, target_mr)
+
     def _test_action_sequence(self, words, actions, target_mr):
         """Tests that the given action sequence is found.
 
