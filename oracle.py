@@ -27,7 +27,6 @@ class Beam:
         for item in self.items:
             successors = item.successors(self.lex)
             successors = [s for s in successors if self.check_rejector(s)]
-            # TODO fix the siblings check
             successors = [s for s in successors if self.check_siblings(s, successors)]
             successors = [s for s in successors if self.check_seen(s)]
             next_items.extend(successors)
