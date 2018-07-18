@@ -1,4 +1,5 @@
 import augment
+import collections
 import lexicon
 import parseitems
 import random
@@ -65,11 +66,16 @@ class Rejector:
     def __init__(self, target_mr):
         self.target_mr = target_mr
         self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
+        self.elements = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
 
     def reject(self, item):
         # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
+        # predicate bag check (TODO: this can be better, like making sure stack and queue elements add up to the needed ones)
+        elements = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
+        if not util.issubset(elements, self.elements):
+            return True
         # fragment check (false negatives (and positives?) unless mr is augmented!)
         fragments = tuple(find_fragment(se.mr, self.fragments) for se in item.stack)
         bindings = {}
