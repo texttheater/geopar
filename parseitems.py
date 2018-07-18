@@ -119,11 +119,6 @@ class ParseItem:
         return ParseItem(stack, queue, False, ('shift', n, term.to_string()), self)
 
     def skip(self, lex):
-        if not geoquery.skip_allowed(self.queue, lex):
-            # HACK: ideally we'd like to allow skipping any word and let the
-            # learning algorithm figure out when not to do it. But that makes
-            # the search space explode.
-            raise parsestacks.IllegalAction('cannot skip this word')
         stack = self.stack
         queue = self.queue.pop()
         return ParseItem(stack, queue, False, ('skip',), self)

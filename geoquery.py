@@ -30,17 +30,3 @@ def integrate_allowed(term, arg_num):
     if len(name) == 1: # single-letter names for testing
         return True
     return False
-
-
-def skip_allowed(queue, lex):
-    # This is turning into a farce:
-    if queue.head in ('is', 'of', 'with', 'city', 'in', 'have', 'has', 'state', 'states', 'least', 'river', 'rivers', 'through', 'square', 'kilometers', 'whose', 'major', 'total', 'country', 'neighboring', 'for', 'points', 'that'):
-        return True
-    for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
-        try:
-            token = tuple(queue[i] for i in range(token_length))
-        except IndexError:
-            break
-        if tuple(lex.meanings(token)):
-            return False
-    return True
