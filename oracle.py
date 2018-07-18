@@ -1,5 +1,6 @@
 import augment
 import collections
+import config
 import lexicon
 import parseitems
 import random
@@ -8,7 +9,7 @@ import util
 
 def initial_beam(words, target_mr, lex):
     items = [parseitems.initial(words)]
-    rejector = Rejector(target_mr)
+    rejector = Rejector(target_mr, lex)
     seen = set()
     return Beam(items, rejector, seen, lex)
 
@@ -64,18 +65,22 @@ class Beam:
 
 class Rejector:
 
-    def __init__(self, target_mr):
+    def __init__(self, target_mr, lex):
         self.target_mr = target_mr
         self.fragments = list(f for s in target_mr.subterms() for f in s.fragments())
-        self.elements = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
+        self.lsts = collections.Counter(l.to_string() for l in lexicon.lexical_subterms(target_mr))
+        self.lex = lex
 
     def reject(self, item):
-        # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment
+        # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment??
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
-        # predicate bag check (TODO: this can be better, like making sure stack and queue elements add up to the needed ones)
-        elements = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
-        if not util.issubset(elements, self.elements):
+        # predicate bag check
+        stack_lsts = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
+        if not util.issubset(stack_lsts, self.lsts):
+            return True
+        queue_lsts = collections.Counter(meaning.to_string() for length in range(1, config.MAX_TOKEN_LENGTH + 1) for word in util.ngrams(length, tuple(item.queue)) for meaning in self.lex.meanings(word))
+        if not util.issubset(self.lsts, stack_lsts + queue_lsts):
             return True
         # fragment check (false negatives (and positives?) unless mr is augmented!)
         fragments = tuple(find_fragment(se.mr, self.fragments) for se in item.stack)
