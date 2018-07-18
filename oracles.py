@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 
+import augment
 import fileinput
 import oracle
 import sys
@@ -15,5 +16,10 @@ if __name__ == '__main__':
         print(' '.join(words))
         print(mr.to_string())
         for action in oracle.action_sequence(words, mr):
+            if action[0] == 'shift':
+                lst = terms.from_string(action[2])
+                if isinstance(lst, terms.ComplexTerm):
+                    lst.functor_name = augment.unaugment(lst.functor_name)
+                action = (action[0], action[1], lst.to_string())
             print(action)
         print()
