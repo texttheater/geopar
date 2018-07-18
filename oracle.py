@@ -105,7 +105,7 @@ def action_sequence(words, target_mr):
     lex = augment.AugmentingLexicon(lexicon.read_lexicon('lexicon.txt'), target_mr)
     beam = initial_beam(words, target_mr.augment(), lex)
     while beam.items:
-        print(len(beam.items), random.choice(beam.items))
+        #print(len(beam.items), random.choice(beam.items))
         beam = beam.next()
         finished = [i for i in beam.items if i.finished]
         if finished:
