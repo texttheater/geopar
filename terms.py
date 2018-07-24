@@ -37,6 +37,7 @@ yet be turned into T by adding additional conjuncts to arguments in F.
 """
 
 
+import augment
 import collections
 import itertools
 import lstack
@@ -87,8 +88,19 @@ class Term:
     def augment(self, predicate_counter=None):
         return self
 
+    def unaugment(self):
+        return self
+
+    def replace(self, old, new):
+        if self.equal(old):
+            return new
+        return self
+
 
 class Variable(Term):
+    
+    def equal(self, other):
+        return self == other
 
     def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
@@ -103,16 +115,14 @@ class Variable(Term):
         bindings[self] = other
         return True
 
-    def replace(self, old, new):
-        if self == old:
-            return new
-        return self
-
 
 class Atom(Term):
 
     def __init__(self, name):
         self.name = name
+
+    def equal(self, other):
+        return isinstance(other, Atom) and self.name == other.name
 
     def to_string(self, var_name_dict=None, marked_terms=None):
         match = _ATOM_PATTERN.fullmatch(self.name)
@@ -130,17 +140,24 @@ class Atom(Term):
     def __str__(self):
         return self.name
 
-    def replace(self, old, new):
-        if self == old:
-            return new
-        return self
-
 
 class ComplexTerm(Term):
 
     def __init__(self, functor_name, args):
         self.functor_name = functor_name
         self.args = tuple(args)
+
+    def equal(self, other):
+        if not isinstance(other, ComplexTerm):
+            return False
+        if self.functor_name != other.functor_name:
+            return False
+        if len(self.args) != len(other.args):
+            return False
+        for a, b in zip(self.args, other.args):
+            if not a.equal(b):
+                return False
+        return True
 
     def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
@@ -186,7 +203,7 @@ class ComplexTerm(Term):
         return True
 
     def replace(self, old, new):
-        if self == old:
+        if self.equal(old):
             return new
         args = (arg.replace(old, new) for arg in self.args)
         return ComplexTerm(self.functor_name, args)
@@ -210,21 +227,32 @@ class ComplexTerm(Term):
             predicate_counter = collections.Counter()
         pred = (self.functor_name, len(self.args))
         predicate_counter[pred] += 1
-        if pred == ('answer', 2):
-            functor_name = self.functor_name
-        else:
-            functor_name = self.functor_name + '_' + str(predicate_counter[pred])
+        functor_name = self.functor_name + '_' + str(predicate_counter[pred])
         if pred == ('const', 2):
             args = self.args
         else:
             args = tuple(a.augment(predicate_counter) for a in self.args)
         return ComplexTerm(functor_name, args)
 
+    def unaugment(self):
+        return ComplexTerm(augment.unaugment(self.functor_name),
+                           tuple(a.unaugment() for a in self.args))
+
 
 class ConjunctiveTerm(Term):
 
     def __init__(self, conjuncts):
         self.conjuncts = tuple(conjuncts)
+
+    def equal(self, other):
+        if not isinstance(other, ConjunctiveTerm):
+            return False
+        if len(self.conjuncts) != len(other.conjuncts):
+            return False
+        for a, b in zip(self.conjuncts, other.conjuncts):
+            if not a.equal(b):
+                return False
+        return True
 
     def to_string(self, var_name_dict=None, marked_terms=None):
         if var_name_dict is None:
@@ -260,7 +288,7 @@ class ConjunctiveTerm(Term):
         return True
 
     def replace(self, old, new):
-        if self == old:
+        if self.equal(old):
             return new
         return ConjunctiveTerm(c.replace(old, new) for c in self.conjuncts)
 
@@ -269,11 +297,17 @@ class ConjunctiveTerm(Term):
             predicate_counter = collections.Counter()
         return ConjunctiveTerm(c.augment(predicate_counter) for c in self.conjuncts)
 
+    def unaugment(self):
+        return ConjunctiveTerm(c.unaugment() for c in self.conjuncts)
+
 
 class Number(Term):
 
     def __init__(self, number):
         self.number = number
+
+    def equal(self, other):
+        return isinstance(other, Number) and self.number == other.number
 
     def to_string(self, var_name_dict=None, marked_terms=None):
         return str(self.number)
@@ -285,11 +319,6 @@ class Number(Term):
 
     def __str__(self):
         return str(self.number)
-
-    def replace(self, old, new):
-        if self == old:
-            return new
-        return self
 
 
 class List:

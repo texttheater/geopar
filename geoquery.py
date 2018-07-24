@@ -25,7 +25,7 @@ def integrate_allowed(term, arg_num):
         return arg_num == 2
     if name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest', 'answer'):
         return arg_num == 2
-    if name == '\+':
+    if name in ('\+', 'root'):
         return arg_num == 1
     if len(name) == 1: # single-letter names for testing
         return True

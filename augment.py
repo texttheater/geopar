@@ -15,8 +15,7 @@ class AugmentingLexicon:
         self.lst = [terms.from_string(l.to_string()) for l in self.lst] # undo variable bindings
 
     def meanings(self, word):
-        meanings = self.lex.meanings(word)
-        for m in meanings:
+        for m in self.lex.meanings(word):
             for l in self.lst:
                 unaugmented = terms.ComplexTerm(unaugment(l.functor_name), l.args)
                 if unaugmented.equivalent(m):

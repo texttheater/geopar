@@ -200,10 +200,10 @@ class TermsTestCase(unittest.TestCase):
     def test_augment(self):
         t = terms.from_string('answer(A,longest(A,(river(A),traverse(A,B),state(B),next_to(B,C),most(C,D,(state(C),next_to(C,D),state(D))))))')
         u = t.augment()
-        self.assertEqual(u.to_string(), 'answer(A,longest_1(A,(river_1(A),traverse_1(A,B),state_1(B),next_to_1(B,C),most_1(C,D,(state_2(C),next_to_2(C,D),state_3(D))))))')
+        self.assertEqual(u.to_string(), 'answer_1(A,longest_1(A,(river_1(A),traverse_1(A,B),state_1(B),next_to_1(B,C),most_1(C,D,(state_2(C),next_to_2(C,D),state_3(D))))))')
         t = terms.from_string('answer(A,lowest(B,(state(A),traverse(C,A),const(C,riverid(mississippi)),loc(B,A),place(B))))')
         u = t.augment()
-        self.assertEqual(u.to_string(), 'answer(A,lowest_1(B,(state_1(A),traverse_1(C,A),const_1(C,riverid(mississippi)),loc_1(B,A),place_1(B))))')
+        self.assertEqual(u.to_string(), 'answer_1(A,lowest_1(B,(state_1(A),traverse_1(C,A),const_1(C,riverid(mississippi)),loc_1(B,A),place_1(B))))')
 
     def test_compute_all_fragments(self):
         count = 0
