@@ -173,7 +173,6 @@ class ParseItem:
             if not geoquery.integrate_allowed(parent, label[1]):
                 raise IllegalAction('cannot embed into argument ', label[1], ' of ', parent.functor_name)
             old = parent.args[label[1] - 1]
-            print('old:', old.to_string())
             if isinstance(old, terms.Variable):
                 new = child
             elif isinstance(old, terms.ConjunctiveTerm):

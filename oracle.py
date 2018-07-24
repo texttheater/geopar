@@ -280,7 +280,7 @@ def action_sequence(words, target_mr):
     oracle = GeoQueryOracle(target_mr, lex)
     beam = [parseitems.initial(words, terms.from_string(term2node(oracle.root)), terms.from_string(term2node(oracle.subroot)))]
     print_beam(beam)
-    while beam:
+    while not all(item.finished for item in beam):
         new_beam = []
         for item in beam:
             actions = oracle.possible_actions(item)
@@ -288,9 +288,10 @@ def action_sequence(words, target_mr):
                 new_beam.append(item.successor(action, lex))
         beam = new_beam
         print_beam(beam)
-        finished = [i for i in beam if i.finished]
-        if finished:
-            return finished[0].action_sequence()
+        for item in beam:
+            if item.finished and \
+                item.root.unaugment().args[0].equivalent(target_mr):
+                return item.action_sequence()
     raise ValueError('no action sequence found')
 
 

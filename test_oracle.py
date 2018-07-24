@@ -56,6 +56,7 @@ class OracleTest(unittest.TestCase):
 
     def test_coverage(self):
         for words, target_mr in data.geo880_train():
+            print('================================================================================')
             print(' '.join(words))
             print(target_mr.to_string())
             actions = oracle.action_sequence(words, target_mr)
