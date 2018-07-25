@@ -99,6 +99,8 @@ class ParseItem:
             raise IllegalAction('nothing to reduce')
         if is_word(self.stack[0]) and len(self.stack[0]) > 1:
             raise IllegalAction('can only reduce single words')
+        if len(self.stack) >= 2 and is_word(self.stack[1]):
+            raise IllegalAction('cannot reduce when s1 is a word')
         stack = self.stack.pop()
         if is_node(self.stack[0]) and self.stack[0].functor_name.startswith('root'):
             root = self.stack[0]

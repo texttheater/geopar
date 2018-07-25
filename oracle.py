@@ -110,6 +110,9 @@ class GeoQueryOracle(Oracle):
         if item.stack.is_empty():
             #print(1)
             return []
+        if len(item.stack) >= 2 and parseitems.is_word(item.stack[1]):
+            #print(1.5)
+            return []
         established_nodes, established_edges = self.established_graph(item)
         if parseitems.is_word(item.stack[0]):
             if len(item.stack[0]) > 1:
