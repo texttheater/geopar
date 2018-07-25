@@ -7,6 +7,12 @@ import oracle
 import terms
 
 
+# TODO This implementation crucially depends on the assumption that functor
+# names are unique. Need to pay attention to that at decode time, or better
+# yet, reimplement everything to work on graphs, not terms! (Graph nodes have
+# identity, complex terms as currently implemented do not.)
+
+
 def initial(words, root, subroot):
     """Returns the initial item for the given sentence.
     """
