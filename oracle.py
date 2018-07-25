@@ -19,13 +19,11 @@ class Oracle:
         result.extend(self.possible_finish_actions(item))
         if result:
             return result
+        result.extend(self.possible_reduce_actions(item))
         result.extend(self.possible_merge_actions(item))
         result.extend(self.possible_confirm_actions(item))
         if result:
             result.extend(self.possible_shift_actions(item))
-            return result
-        result.extend(self.possible_reduce_actions(item))
-        if result:
             return result
         result.extend(self.possible_arc_actions(item))
         if result:
