@@ -35,6 +35,12 @@ def replace(old, new, elements):
             yield element
 
 
+def term2node(term):
+    if term.functor_name.startswith('const') and len(term.args) == 2:
+        return term.to_string()
+    return terms.ComplexTerm(term.functor_name, tuple(terms.Variable() for arg in term.args)).to_string()
+
+
 class IllegalAction(Exception):
     pass
 
@@ -146,9 +152,9 @@ class ParseItem:
             if isinstance(old, terms.Variable):
                 new = child
             elif isinstance(old, terms.ConjunctiveTerm):
-                new = terms.ConjunctiveTerm((child,) + old.conjuncts)
+                new = terms.ConjunctiveTerm(sorted((child,) + old.conjuncts, key=self.conjunct_sort_key))
             else:
-                new = terms.ConjunctiveTerm((child, old))
+                new = terms.ConjunctiveTerm(sorted((child, old), key=self.conjunct_sort_key))
             result = parent.replace(old, new)
             stack = lstack.stack(replace(parent, result, self.stack))
             queue = lstack.stack(replace(parent, result, self.queue))
@@ -185,13 +191,18 @@ class ParseItem:
             if isinstance(old, terms.Variable):
                 new = child
             elif isinstance(old, terms.ConjunctiveTerm):
-                new = terms.ConjunctiveTerm(old.conjuncts + (child,))
+                new = terms.ConjunctiveTerm(sorted(old.conjuncts + (child,), key=self.conjunct_sort_key))
             else:
-                new = terms.ConjunctiveTerm((old, child))
+                new = terms.ConjunctiveTerm(sorted((old, child), key=self.conjunct_sort_key))
             result = parent.replace(old, new)
             stack = lstack.stack(replace(parent, result, self.stack))
             queue = lstack.stack(replace(parent, result, self.queue))
             return ParseItem(stack, queue, self.confirm_order, self.root, False, ('rarc', label), self)
+
+    def conjunct_sort_key(self, conjunct):
+        node = term2node(conjunct)
+        index = self.confirm_order.index(node)
+        return -index
 
     def swap(self):
         if len(self.stack) < 2:

@@ -126,7 +126,7 @@ class GeoQueryOracle(Oracle):
                 #print(3)
                 return [] # if we reduce this word then we would be missing a lexical MR that we need
         else:
-            node = term2node(item.stack[0])
+            node = parseitems.term2node(item.stack[0])
             for node2, edges in self.edges[node].items():
                 for edge in edges:
                     if not edge in established_edges[node][node2]:
@@ -149,8 +149,8 @@ class GeoQueryOracle(Oracle):
         if not parseitems.is_node(item.stack[1]):
             return []
         _, established_edges = self.established_graph(item)
-        node0 = term2node(item.stack[0])
-        node1 = term2node(item.stack[1])
+        node0 = parseitems.term2node(item.stack[0])
+        node1 = parseitems.term2node(item.stack[1])
         for edge in self.edges[node0][node1]:
             if not edge in established_edges[node0][node1]:
                 return [('larc', edge)]
@@ -174,7 +174,7 @@ class GeoQueryOracle(Oracle):
         #if not parseitems.is_node(item.stack[0]):
         #    return []
         #established_nodes, _ = self.established_graph(item)
-        #s0 = term2node(item.stack[0])
+        #s0 = parseitems.term2node(item.stack[0])
         ## See if we need an edge between s0 and any not-yet-established node:
         #for node, edges in self.edges[s0].items():
         #    if node not in established_nodes and edges:
@@ -184,7 +184,7 @@ class GeoQueryOracle(Oracle):
         #        continue
         #    if e2[s0]:
         #        return []
-        #s1 = term2node(item.stack[1])
+        #s1 = parseitems.term2node(item.stack[1])
         ## See if we need an edge between s1 and any not-yet-established node:
         #for node, edges in self.edges[s1].items():
         #    if node not in established_nodes and edges:
@@ -226,15 +226,9 @@ def nody_subterms(term):
             yield from nody_subterms(conj)
 
 
-def term2node(term):
-    if term.functor_name.startswith('const') and len(term.args) == 2:
-        return term.to_string()
-    return terms.ComplexTerm(term.functor_name, tuple(terms.Variable() for arg in term.args)).to_string()
-
-
 def terms2graph(trms):
     subterms = [s for t in trms for s in nody_subterms(t)]
-    nodes = [term2node(s) for s in subterms]
+    nodes = [parseitems.term2node(s) for s in subterms]
     # edges is a mapping: parent node -> child node -> set of edge labels
     # for embedding edges, parent = containing term; child = contained term
     # coreference edges are doubly represented, once for each direction
@@ -279,7 +273,7 @@ def action_sequence(words, target_mr):
     """
     lex = lexicon.read_lexicon('lexicon.txt')
     oracle = GeoQueryOracle(target_mr, lex)
-    beam = [parseitems.initial(words, terms.from_string(term2node(oracle.root)), terms.from_string(term2node(oracle.subroot)))]
+    beam = [parseitems.initial(words, terms.from_string(parseitems.term2node(oracle.root)), terms.from_string(parseitems.term2node(oracle.subroot)))]
     print_beam(beam)
     while not all(item.finished for item in beam):
         new_beam = []
