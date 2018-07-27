@@ -120,9 +120,9 @@ class GeoQueryOracle(Oracle):
                 #print(2)
                 return [] # only reduce single words
             potential_nodes = queue_nodes(item.queue, self.lex)
-            print(self.nodes)
-            print(established_nodes)
-            print(potential_nodes)
+            #print(self.nodes)
+            #print(established_nodes)
+            #print(potential_nodes)
             if not self.nodes <= established_nodes | potential_nodes:
                 #print(3)
                 return [] # if we reduce this word then we would be missing a lexical MR that we need
@@ -275,7 +275,7 @@ def action_sequence(words, target_mr):
     lex = lexicon.read_lexicon('lexicon.txt')
     oracle = GeoQueryOracle(target_mr, lex)
     beam = [parseitems.initial(words, terms.from_string(parseitems.term2node(oracle.root)), terms.from_string(parseitems.term2node(oracle.subroot)))]
-    print_beam(beam)
+    #print_beam(beam)
     while not all(item.finished for item in beam):
         new_beam = []
         for item in beam:
@@ -283,21 +283,9 @@ def action_sequence(words, target_mr):
             for action in actions:
                 new_beam.append(item.successor(action, lex))
         beam = new_beam
-        print_beam(beam)
+        #print_beam(beam)
         for item in beam:
             if item.finished and \
                 item.root.unaugment().args[0].equivalent(target_mr):
                 return item.action_sequence()
     raise ValueError('no action sequence found')
-
-
-if __name__ == '__main__':
-    for _, mr in data.geo880_train():
-        nodes, edges = mr2graph(mr)
-        for node in nodes:
-            print(node)
-        for node1, e2 in edges.items():
-            for node2, labels in e2.items():
-                for label in labels:
-                    print(node1, node2, label)
-        print()
