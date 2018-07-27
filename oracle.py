@@ -23,7 +23,8 @@ class Oracle:
         result.extend(self.possible_merge_actions(item))
         result.extend(self.possible_confirm_actions(item))
         if result:
-            result.extend(self.possible_shift_actions(item))
+            if parseitems.is_word(item.stack[0]): # also need to consider shift b/c possible multiwords
+                result.extend(self.possible_shift_actions(item))
             return result
         result.extend(self.possible_arc_actions(item))
         if result:
