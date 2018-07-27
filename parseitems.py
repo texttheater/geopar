@@ -38,7 +38,13 @@ def replace(old, new, elements):
 def term2node(term):
     if term.functor_name.startswith('const') and len(term.args) == 2:
         return term.to_string()
-    return terms.ComplexTerm(term.functor_name, tuple(terms.Variable() for arg in term.args)).to_string()
+    args = []
+    for arg in term.args:
+        if isinstance(arg, terms.Number):
+            args.append(arg)
+        else:
+            args.append(terms.Variable())
+    return terms.ComplexTerm(term.functor_name, args).to_string()
 
 
 class IllegalAction(Exception):
