@@ -59,6 +59,9 @@ class _EmptyLinkedStack(LinkedStack):
         return
         yield
 
+    def index(self, element):
+        raise ValueError(str(element) + ' is not in stack')
+
 
 _EMPTY_LINKED_STACK = _EmptyLinkedStack()
 
@@ -82,3 +85,8 @@ class _NonEmptyLinkedStack(LinkedStack):
     def __iter__(self):
         yield self.head
         yield from self.tail
+
+    def index(self, element):
+        if self.head == element:
+            return 0
+        return 1 + self.tail.index(element)

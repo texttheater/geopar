@@ -31,3 +31,13 @@ class LinkedStackTestCase(unittest.TestCase):
         s = lstack.stack(l)
         l2 = list(s)
         self.assertEqual(l, l2)
+
+    def test_index(self):
+        s = lstack.stack((1, 2, 3))
+        self.assertEqual(s.index(1), 0)
+        self.assertEqual(s.index(2), 1)
+        self.assertEqual(s.index(3), 2)
+        with self.assertRaises(ValueError):
+            s.index(0)
+        with self.assertRaises(ValueError):
+            s.index(4)
