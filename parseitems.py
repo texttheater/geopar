@@ -16,7 +16,7 @@ import terms
 def initial(words, root, subroot):
     """Returns the initial item for the given sentence.
     """
-    return ParseItem(lstack.stack((subroot,)), lstack.stack(itertools.chain(((w,) for w in words), (root,))), None, False, None, None)
+    return ParseItem(lstack.stack((subroot,)), lstack.stack(itertools.chain(((w,) for w in words), (root,))), lstack.stack(), None, False, None, None)
 
 
 def is_word(stack_element):
@@ -41,9 +41,10 @@ class IllegalAction(Exception):
 
 class ParseItem:
 
-    def __init__(self, stack, queue, root, finished, action, pred):
+    def __init__(self, stack, queue, confirm_order, root, finished, action, pred):
         self.stack = stack
         self.queue = queue
+        self.confirm_order = confirm_order
         self.root = root
         self.finished = finished
         self.action = action
@@ -52,7 +53,7 @@ class ParseItem:
     def idle(self):
         if not self.finished:
             raise IllegalAction('not finished')
-        return ParseItem(self.stack, self.queue, self.root, True, ('idle',), self)
+        return ParseItem(self.stack, self.queue, self.confirm_order, self.root, True, ('idle',), self)
 
     def finish(self):
         if self.finished:
@@ -61,7 +62,7 @@ class ParseItem:
             raise IllegalAction('stack must be empty to finish')
         if not self.queue.is_empty():
             raise IllegalAction('queue must be empty to finish')
-        return ParseItem(self.stack, self.queue, self.root, True, ('finish',), self)
+        return ParseItem(self.stack, self.queue, self.confirm_order, self.root, True, ('finish',), self)
 
     def merge(self):
         if len(self.stack) < 2:
@@ -75,7 +76,7 @@ class ParseItem:
         stack = stack.pop()
         w = w1 + w0
         stack = stack.push(w)
-        return ParseItem(stack, self.queue, self.root, False, ('merge',), self)
+        return ParseItem(stack, self.queue, self.confirm_order, self.root, False, ('merge',), self)
 
     def confirm(self, meaning):
         if self.stack.is_empty() or not is_word(self.stack[0]):
@@ -85,7 +86,7 @@ class ParseItem:
         stack = self.stack
         stack = stack.pop()
         stack = stack.push(meaning)
-        return ParseItem(stack, self.queue, self.root, False, ('confirm', meaning.to_string()), self)
+        return ParseItem(stack, self.queue, self.confirm_order.push(meaning.to_string()), self.root, False, ('confirm', meaning.to_string()), self)
 
     def shift(self):
         if self.queue.is_empty():
@@ -98,7 +99,7 @@ class ParseItem:
             raise IllegalAction('cannot shift node onto a word')
         stack = self.stack.push(self.queue.head)
         queue = self.queue.pop()
-        return ParseItem(stack, queue, self.root, False, ('shift',), self)
+        return ParseItem(stack, queue, self.confirm_order, self.root, False, ('shift',), self)
 
     def reduce(self):
         if self.stack.is_empty():
@@ -112,7 +113,7 @@ class ParseItem:
             root = self.stack[0]
         else:
             root = self.root
-        return ParseItem(stack, self.queue, root, False, ('reduce',), self)
+        return ParseItem(stack, self.queue, self.confirm_order, root, False, ('reduce',), self)
 
     def larc(self, label):
         if len(self.stack) < 2:
@@ -134,7 +135,7 @@ class ParseItem:
                 raise IllegalAction('variables already corefer')
             stack = lstack.stack(replace(old, new, self.stack))
             queue = lstack.stack(replace(old, new, self.queue))
-            return ParseItem(stack, queue, self.root, False, ('larc', label), self)
+            return ParseItem(stack, queue, self.confirm_order, self.root, False, ('larc', label), self)
         else:
             assert label[0] == 'embed'
             parent = self.stack[0]
@@ -151,7 +152,7 @@ class ParseItem:
             result = parent.replace(old, new)
             stack = lstack.stack(replace(parent, result, self.stack))
             queue = lstack.stack(replace(parent, result, self.queue))
-            return ParseItem(stack, queue, self.root, False, ('larc', label), self)
+            return ParseItem(stack, queue, self.confirm_order, self.root, False, ('larc', label), self)
 
     def rarc(self, label):
         if len(self.stack) < 2:
@@ -173,7 +174,7 @@ class ParseItem:
                 raise IllegalAction('variables already corefer')
             stack = lstack.stack(replace(old, new, self.stack))
             queue = lstack.stack(replace(old, new, self.queue))
-            return ParseItem(stack, queue, self.root, False, ('rarc', label), self)
+            return ParseItem(stack, queue, self.confirm_order, self.root, False, ('rarc', label), self)
         else:
             assert label[0] == 'embed'
             parent = self.stack[1]
@@ -190,7 +191,7 @@ class ParseItem:
             result = parent.replace(old, new)
             stack = lstack.stack(replace(parent, result, self.stack))
             queue = lstack.stack(replace(parent, result, self.queue))
-            return ParseItem(stack, queue, self.root, False, ('rarc', label), self)
+            return ParseItem(stack, queue, self.confirm_order, self.root, False, ('rarc', label), self)
 
     def swap(self):
         if len(self.stack) < 2:
@@ -204,7 +205,7 @@ class ParseItem:
         stack = stack.pop()
         queue = self.queue.push(s1)
         stack = stack.push(s0)
-        return ParseItem(stack, queue, self.root, False, ('swap',), self)
+        return ParseItem(stack, queue, self.confirm_order, self.root, False, ('swap',), self)
 
     def successor(self, action, lex):
         if action[0] == 'idle':
