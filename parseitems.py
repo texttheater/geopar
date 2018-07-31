@@ -232,21 +232,3 @@ class ParseItem:
         return 'ParseItem([' + ', '.join(stack) + '], [' + \
             ', '.join(self.words[self.offset:]) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
-
-    def equivalent(self, other):
-        if not self.words == other.words:
-            return False
-        if not self.offset == other.offset:
-            return False
-        if not self.finished == other.finished:
-            return False
-        if not len(self.stack) == len(other.stack):
-            return False
-        bindings1 = {}
-        bindings2 = {}
-        for a, b in zip(self.stack, other.stack):
-            if not a.subsumes(b, bindings1):
-                return False
-            if not b.subsumes(a, bindings2):
-                return False
-        return True
