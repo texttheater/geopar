@@ -78,7 +78,7 @@ class Rejector:
         stack_lsts = collections.Counter(l.to_string() for se in item.stack for l in lexicon.lexical_subterms(se.mr))
         if not util.issubset(stack_lsts, self.lsts):
             return True
-        queue_lsts = collections.Counter(meaning.to_string() for length in range(1, config.MAX_TOKEN_LENGTH + 1) for word in util.ngrams(length, tuple(item.queue)) for meaning in self.lex.meanings(word))
+        queue_lsts = collections.Counter(meaning.to_string() for length in range(1, config.MAX_TOKEN_LENGTH + 1) for word in util.ngrams(length, tuple(item.words[item.offset:])) for meaning in self.lex.meanings(word))
         if not util.issubset(self.lsts, stack_lsts + queue_lsts):
             return True
         # fragment check (false negatives (and positives?) unless mr is augmented!)

@@ -13,14 +13,15 @@ INIT_STACK = lstack.stack((parsestacks.new_element(terms.from_string('answer(_,_
 def initial(words):
     """Returns the initial item for the given sentence.
     """
-    return ParseItem(INIT_STACK, lstack.stack(words), False, None, None)
+    return ParseItem(INIT_STACK, tuple(words), 0, False, None, None)
 
 
 class ParseItem:
 
-    def __init__(self, stack, queue, finished, action, pred):
+    def __init__(self, stack, words, offset, finished, action, pred):
         self.stack = stack
-        self.queue = queue
+        self.words = words
+        self.offset = offset
         self.finished = finished
         self.action = action
         self.pred = pred
@@ -28,7 +29,7 @@ class ParseItem:
     def idle(self):
         if not self.finished:
             raise parsestacks.IllegalAction('not finished')
-        return ParseItem(self.stack, self.queue, True, ('idle',), self)
+        return ParseItem(self.stack, self.words, self.offset, True, ('idle',), self)
 
     def finish(self):
         if self.finished:
@@ -37,9 +38,9 @@ class ParseItem:
             raise parsestacks.IllegalAction('stack size must be 1 to finish')
         if not self.stack.head.secstack.is_empty():
             raise parsestacks.IllegalAction('secondary stack must be empty to finish')
-        if not self.queue.is_empty():
+        if not self.offset == len(self.words):
             raise parsestacks.IllegalAction('queue must be empty to finish')
-        return ParseItem(self.stack, self.queue, True, ('finish',), self)
+        return ParseItem(self.stack, self.words, self.offset, True, ('finish',), self)
 
     def lift(self, arg_num):
         stack = self.stack
@@ -49,7 +50,7 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.lift(0, arg_num, liftee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('lift', arg_num), self)
+        return ParseItem(stack, self.words, self.offset, False, ('lift', arg_num), self)
 
     def slift(self):
         stack = self.stack
@@ -59,7 +60,7 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.slift(sliftee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('slift',), self)
+        return ParseItem(stack, self.words, self.offset, False, ('slift',), self)
 
     def drop(self, arg_num):
         stack = self.stack
@@ -69,7 +70,7 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.drop(0, arg_num, droppee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('drop', arg_num), self)
+        return ParseItem(stack, self.words, self.offset, False, ('drop', arg_num), self)
 
     def sdrop(self):
         stack = self.stack
@@ -79,7 +80,7 @@ class ParseItem:
         stack = stack.pop()
         se_new = se_old.sdrop(sdroppee)
         stack = stack.push(se_new)
-        return ParseItem(stack, self.queue, False, ('sdrop',), self)
+        return ParseItem(stack, self.words, self.offset, False, ('sdrop',), self)
 
     def pop(self):
         # pop the topmost element of the secondary stack of the topmost stack
@@ -101,27 +102,27 @@ class ParseItem:
         while not tmp.is_empty():
             stack = stack.push(tmp.head)
             tmp = tmp.pop()
-        return ParseItem(stack, self.queue, False, ('pop',), self)
+        return ParseItem(stack, self.words, self.offset, False, ('pop',), self)
 
     def coref(self, ssp1, arg1, ssp0, arg0):
         se0 = self.stack[0]
         se1 = self.stack[1]
         old, new = se0.coref(ssp0, arg0, se1, ssp1, arg1)
         stack = lstack.stack(parsestacks.StackElement(se.mr.replace(old, new), se.secstack) for se in self.stack)
-        return ParseItem(stack, self.queue, False, ('coref', ssp1, arg1, ssp0, arg0), self)
+        return ParseItem(stack, self.words, self.offset, False, ('coref', ssp1, arg1, ssp0, arg0), self)
 
     def shift(self, n, term):
         se = parsestacks.new_element(term)
         stack = self.stack.push(se)
-        queue = self.queue
-        for i in range(n):
-            queue = queue.pop()
-        return ParseItem(stack, queue, False, ('shift', n, term.to_string()), self)
+        if self.offset + n > len(self.words):
+            raise IndexError('less than {} words left in queue'.format(n))
+        return ParseItem(stack, self.words, self.offset + n, False, ('shift', n, term.to_string()), self)
 
     def skip(self, lex):
         stack = self.stack
-        queue = self.queue.pop()
-        return ParseItem(stack, queue, False, ('skip',), self)
+        if self.offset + 1 > len(self.words):
+            raise IndexError('no word left in queue')
+        return ParseItem(stack, self.words, self.offset + 1, False, ('skip',), self)
 
     def successor(self, action, lex):
         if action[0] == 'idle':
@@ -194,12 +195,11 @@ class ParseItem:
                         except (IndexError, parsestacks.IllegalAction):
                             continue
         # shift
-        for token_length in range(1, config.MAX_TOKEN_LENGTH + 1):
-            try:
-                token = tuple(self.queue[i] for i in range(token_length))
-            except IndexError: # queue too short
-                break
-            for meaning in lex.meanings(token):
+        for token_length in range(1, min(config.MAX_TOKEN_LENGTH,
+                                         len(self.words) - self.offset) \
+                                     + 1):
+            word = self.words[self.offset:self.offset + token_length]
+            for meaning in lex.meanings(word):
                 yield self.shift(token_length, meaning)
         # skip
         try:
@@ -230,11 +230,13 @@ class ParseItem:
             marked_terms = tuple(se.mr.at_address(a) for a in se.secstack)
             stack.append(se.mr.to_string(var_name_dict, marked_terms))
         return 'ParseItem([' + ', '.join(stack) + '], [' + \
-            ', '.join(self.queue) + '], ' + str(self.finished) + ', ' + \
+            ', '.join(self.words[self.offset:]) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
 
     def equivalent(self, other):
-        if not self.queue == other.queue:
+        if not self.words == other.words:
+            return False
+        if not self.offset == other.offset:
             return False
         if not self.finished == other.finished:
             return False
