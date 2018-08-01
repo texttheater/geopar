@@ -340,10 +340,9 @@ class ItemsTestCase(unittest.TestCase):
         beam = oracle.initial_beam(words, target_mr.augment(), lex)
         item = beam.items[0]
         for action in actions:
-            for i in beam.items:
-                print(i)
-            print()
-            #print(item)
+            #for i in beam.items:
+            #    print(i)
+            #print()
             item.successor(action, lex)
             beam = beam.next()
             beam.items = [s for s in beam.items if s.action == action]
