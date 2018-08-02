@@ -54,18 +54,28 @@ class StackElement:
         new = other.mr
         conj_num = 1
         mr = self.mr.replace(old, new)
+        secstack = self.secstack
         address_droppee = address_target + (arg_num, conj_num)
-        secstack = self.secstack.push(address_droppee)
+        secstack = secstack.push(address_droppee)
         return StackElement(mr, secstack)
 
     def sdrop(self, other):
         if not other.secstack.is_empty():
-            raise IllegalAction('cannot sister-drop a stack element with a non-empty secondary stack')
-        address = self.secstack.head
-        *address, arg_num, conj_num = address
-        address = tuple(address)
-        target = self.mr.at_address(address)
-        old = target.args[arg_num - 1]
+            raise IllegalAction('cannot drop a stack element with a non-empty secondary stack')
+        if not isinstance(other.mr, terms.ComplexTerm):
+            raise IllegalAction('can only sdrop complex terms')
+        sibling, sibling_address =  self._target_address(0)
+        # Determine the old term to be replaced:
+        if len(sibling_address) == 0:
+            old = sibling
+        elif len(sibling_address) == 1:
+            old = self.mr
+        else:
+            *parent_address, arg_num, conj_num = sibling_address
+            parent_address = tuple(parent_address)
+            parent = self.mr.at_address(parent_address)
+            old = parent.args[arg_num - 1]
+        # Determine the new (conjunctive term) to replace it with:
         if isinstance(old, terms.ConjunctiveTerm):
             new = terms.ConjunctiveTerm(old.conjuncts + (other.mr,))
             conj_num = len(new.conjuncts)
@@ -73,8 +83,12 @@ class StackElement:
             new = terms.ConjunctiveTerm((old, other.mr))
             conj_num = 2
         mr = self.mr.replace(old, new)
-        address_droppee = address + (arg_num, conj_num)
-        secstack = self.secstack.push(address_droppee)
+        # Put the new conjunct onto the secondary stack:
+        if len(sibling_address) < 2:
+            droppee_address = (conj_num,)
+        else:
+            droppee_address = parent_address + (arg_num, conj_num)
+        secstack = self.secstack.push(droppee_address)
         return StackElement(mr, secstack)
 
     def lift(self, secstack_position, arg_num, other):
@@ -93,27 +107,9 @@ class StackElement:
         new = other.mr
         conj_num = 1
         mr = self.mr.replace(old, new)
+        secstack = self.secstack
         address_liftee = address_target + (arg_num, conj_num)
-        secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
-        return StackElement(mr, secstack)
-
-    def slift(self, other):
-        if not other.secstack.is_empty():
-            raise IllegalAction('cannot sister-lift a stack element with a non-empty secondary stack')
-        address = self.secstack.head
-        *address, arg_num, conj_num = address
-        address = tuple(address)
-        target = self.mr.at_address(address)
-        old = target.args[arg_num - 1]
-        if isinstance(old, terms.ConjunctiveTerm):
-            new = terms.ConjunctiveTerm((other.mr,) + old.conjuncts)
-            conj_num = 1
-        else:
-            new = terms.ConjunctiveTerm((other.mr, old))
-            conj_num = 1
-        mr = self.mr.replace(old, new)
-        address_liftee = address + (arg_num, conj_num)
-        secstack = lstack.stack(fix_address(a, address_liftee) for a in self.secstack).push(address_liftee)
+        secstack = secstack.push(address_liftee)
         return StackElement(mr, secstack)
 
     def coref(self, secstack_position, arg_num, other, other_secstack_position, other_arg_num):
@@ -126,6 +122,8 @@ class StackElement:
         if len(target.args) < arg_num:
             raise IllegalAction('no such argument')
         other_target, _ = other._target_address(other_secstack_position)
+        if isinstance(other_target, terms.ConjunctiveTerm):
+            other_target = other_target.conjuncts[0]
         if not isinstance(other_target, terms.ComplexTerm):
             raise IllegalAction('can only coref into complex terms')
         if not geoquery.coref_allowed(other_target, other_arg_num):

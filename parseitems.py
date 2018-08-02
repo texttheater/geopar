@@ -54,16 +54,6 @@ class ParseItem:
         stack = stack.push(se_new)
         return ParseItem(stack, self.words, self.offset, False, ('lift', arg_num), self)
 
-    def slift(self):
-        stack = self.stack
-        se_old = stack.head
-        stack = stack.pop()
-        sliftee = stack.head
-        stack = stack.pop()
-        se_new = se_old.slift(sliftee)
-        stack = stack.push(se_new)
-        return ParseItem(stack, self.words, self.offset, False, ('slift',), self)
-
     def drop(self, arg_num):
         stack = self.stack
         droppee = stack.head
@@ -133,8 +123,6 @@ class ParseItem:
             return self.finish()
         if action[0] == 'lift':
             return self.lift(action[1])
-        if action[0] == 'slift':
-            return self.slift()
         if action[0] == 'drop':
             return self.drop(action[1])
         if action[0] == 'sdrop':
@@ -166,11 +154,6 @@ class ParseItem:
                 yield self.lift(arg)
             except (IndexError, parsestacks.IllegalAction):
                 continue
-        # slift
-        try:
-            yield self.slift()
-        except (IndexError, parsestacks.IllegalAction):
-            pass
         # drop
         for arg in range(1, 4):
             try:

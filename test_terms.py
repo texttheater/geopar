@@ -115,7 +115,7 @@ class TermsTestCase(unittest.TestCase):
         t1 = terms.from_string('\+_1a(b)')
         self.assertEqual(t1.to_string(), '\+_1a(b)')
 
-    def test_address(self):
+    def test_address_complex(self):
         t = terms.from_string('answer(C, (capital(S, C), largest(P, (state(S), population(S, P)))))')
         s = t.at_address(())
         self.assertTrue(s.equivalent(t))
@@ -140,6 +140,27 @@ class TermsTestCase(unittest.TestCase):
         s = t.at_address((2, 2, 2, 2, 1, 1))
         self.assertTrue(s.equivalent(terms.from_string('S')))
         s = t.at_address((2, 2, 2, 2, 2, 1))
+        self.assertTrue(s.equivalent(terms.from_string('P')))
+
+    def test_address_conjunctive(self):
+        t = terms.from_string('(capital(S, C), largest(P, (state(S), population(S, P))))')
+        s = t.at_address(())
+        self.assertTrue(s.equivalent(t))
+        s = t.at_address((1,))
+        self.assertTrue(s.equivalent(terms.from_string('capital(S, C)')))
+        s = t.at_address((2,))
+        self.assertTrue(s.equivalent(terms.from_string('largest(P, (state(S), population(S, P)))')))
+        s = t.at_address((2, 1, 1))
+        self.assertTrue(s.equivalent(terms.from_string('P')))
+        s = t.at_address((2, 2, 1))
+        self.assertTrue(s.equivalent(terms.from_string('state(S)')))
+        s = t.at_address((2, 2, 1, 1, 1))
+        self.assertTrue(s.equivalent(terms.from_string('S')))
+        s = t.at_address((2, 2, 2))
+        self.assertTrue(s.equivalent(terms.from_string('population(S, P)')))
+        s = t.at_address((2, 2, 2, 1, 1))
+        self.assertTrue(s.equivalent(terms.from_string('S')))
+        s = t.at_address((2, 2, 2, 2, 1))
         self.assertTrue(s.equivalent(terms.from_string('P')))
 
     def test_fragments1(self):

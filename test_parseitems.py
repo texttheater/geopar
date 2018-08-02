@@ -191,32 +191,32 @@ class ItemsTestCase(unittest.TestCase):
             ('coref', 0, 1, 0, 1),
             ('shift', 1, 'traverse_1(A,B)'),
             ('coref', 0, 1, 0, 2),
+            ('sdrop',),
             ('skip',),
             ('skip',),
             ('shift', 1, "const_1(A,riverid(mississippi))"),
             ('coref', 0, 1, 0, 1),
+            ('sdrop',),
             ('skip',),
             ('skip',),
             ('shift', 1, 'loc_1(A,B)'),
+            ('pop',),
+            ('pop',),
+            ('coref', 0, 1, 0, 2),
+            ('sdrop',),
             ('skip',),
             ('shift', 1, 'lowest_1(A,B)'),
             ('coref', 0, 1, 0, 1),
+            ('pop',),
             ('lift', 2),
-            ('slift',),
-            ('coref', 0, 2, 1, 2),
-            ('slift',),
-            ('slift',),
             ('shift', 1, 'place_1(A)'),
-            ('pop',),
-            ('pop',),
-            ('pop',),
-            ('coref', 0, 1, 0, 1),
+            ('coref', 1, 1, 0, 1),
             ('sdrop',),
             ('pop',),
             ('pop',),
             ('drop', 2),
-            ('skip',),
             ('pop',),
+            ('skip',),
             ('finish',),
             ('idle',),
         ]
@@ -330,6 +330,23 @@ class ItemsTestCase(unittest.TestCase):
         ]
         self._test_action_sequence(words, actions, target_mr)
 
+    def test_example8(self):
+        words = 'what texas city has the largest population ?'.split()
+        target_mr = terms.from_string('answer(A,largest(B,(const(C,stateid(texas)),city(A),loc(A,C),population(A,B)))))')
+        actions = [
+            ('skip',),
+            ('shift', 1, 'const_1(A,stateid(texas))'),
+            ('shift', 1, 'city_(A)'),
+            ('sdrop',),
+            ('coref', 1, 1, 0, 2),
+            ('coref', 0, 1, 0, 1),
+            ('pop',),
+            ('pop',),
+            ('sdrop',),
+        ] # FIXME But what now!
+        self._test_action_sequence(words, actions, target_mr)
+    
+
     def _test_action_sequence(self, words, actions, target_mr):
         """Tests that the given action sequence is found.
 
@@ -345,6 +362,9 @@ class ItemsTestCase(unittest.TestCase):
             #print()
             item.successor(action, lex)
             beam = beam.next()
+            #for i in beam.items:
+            #    print('~', i)
+            #print()
             beam.items = [s for s in beam.items if s.action == action]
             self.assertTrue(beam.items, '{} not applied to {}, or rejected'.format(action, item))
             self.assertEqual(len(beam.items), 1)

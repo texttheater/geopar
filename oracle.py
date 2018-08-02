@@ -48,7 +48,7 @@ class Beam:
         #        s.action[0] in ('skip', 'shift') for s in siblings):
         #    return False
         if item.action[0] in ('skip', 'shift') and any(
-            s.action[0] in ('drop', 'lift', 'sdrop', 'slift') for s in siblings):
+            s.action[0] in ('drop', 'lift', 'sdrop') for s in siblings):
             return False
         return True
 
@@ -71,7 +71,7 @@ class Rejector:
         self.lex = lex
 
     def reject(self, item):
-        # TODO can only drop/lift/sdrop/slift something that already has all variable bindings with its environment??
+        # TODO can only drop/lift/sdrop something that already has all variable bindings with its environment??
         if item.finished:
             return not item.stack.head.mr.equivalent(self.target_mr)
         # predicate bag check

@@ -264,6 +264,11 @@ class ConjunctiveTerm(Term):
             return new
         return ConjunctiveTerm(c.replace(old, new) for c in self.conjuncts)
 
+    def at_address(self, address):
+        if not address:
+            return self
+        return self.conjuncts[address[0] - 1].at_address(address[1:])
+
     def augment(self, predicate_counter=None):
         if predicate_counter is None:
             predicate_counter = collections.Counter()

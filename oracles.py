@@ -24,5 +24,9 @@ if __name__ == '__main__':
         term = terms.from_string(line)
         words = tuple(str(w) for w in term.args[0].elements)
         mr = term.args[1]
-        actions = oracle.action_sequence(words, mr)
+        try:
+            actions = oracle.action_sequence(words, mr)
+        except:
+            print('FAILED:', words)
+            sys.exit(1)
         print(json.dumps({'words': words, 'actions': [unaugment(a) for a in actions]}))
