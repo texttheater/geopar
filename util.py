@@ -7,3 +7,9 @@ def ngrams(n, words):
 # Subbag test for collection.Counter objects
 def issubset(X, Y):
     return all(v <= Y[k] for k, v in X.items())
+
+
+def startswith(a, b):
+    if len(a) < len(b):
+        return False
+    return a[:len(b)] == b

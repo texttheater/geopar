@@ -1,10 +1,11 @@
+import collections
 import config
 import geoquery
-import lexicon
 import lstack
 import oracle
 import parsestacks
 import terms
+import util
 
 
 INIT_STACK = lstack.stack((parsestacks.new_element(terms.from_string('answer(_,_)')),))
@@ -25,6 +26,7 @@ class ParseItem:
         self.finished = finished
         self.action = action
         self.pred = pred
+        self._features = None
 
     def idle(self):
         if not self.finished:
@@ -232,3 +234,80 @@ class ParseItem:
         return 'ParseItem([' + ', '.join(stack) + '], [' + \
             ', '.join(self.words[self.offset:]) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
+
+    def local_features(self):
+        # The 'bias' feature is present in every item:
+        yield 'bias'
+        # All other features are template features. We create a dict called
+        # tf, mapping templates to the values of these templates for this item.
+        tf = {}
+        # We first extract the atomic values from the context that we will use
+        # in template features.
+        def get_stack_predicates():
+            for sp, ssp in ((0, 0), (0, 1), (1, 0), (1, 1), (1, 2)):
+                try:
+                    se = self.stack[sp]
+                    yield se.mr.at_address(se.secstack[ssp])
+                except IndexError:
+                    yield None
+        def get_unigrams():
+            for i in (-4, -3, -2, -1, 0, 1, 2, 3):
+                try:
+                    yield self.words[self.offset + i]
+                except IndexError:
+                    yield None
+        def get_last_actions():
+            item = self
+            for i in range(1):
+                yield item.action
+                if item.pred is not None:
+                    item = item.pred
+        s00p, s01p, s10p, s11p, s12p = get_stack_predicates()
+        W4, W3, W2, W1, w0, w1, w2, w3 = get_unigrams()
+        (a1,) = get_last_actions()
+        # Now we populate tf with the template features.
+        # Stack predicates
+        tf['s00p'] = s00p
+        tf['s01p'] = s01p
+        tf['s10p'] = s10p
+        tf['s11p'] = s11p
+        tf['s12p'] = s12p
+        # Combinations thereof
+        for s0ip in ('s00p', 's01p'):
+            for s1jp in ('s10p', 's11p', 's12p'):
+                tf[(s0ip, s1jp)] = (tf[s0ip], tf[s1jp])
+        # Unigrams
+        tf['W4'] = W4
+        tf['W3'] = W3
+        tf['W2'] = W2
+        tf['W1'] = W1
+        tf['w0'] = w0
+        tf['w1'] = w1
+        tf['w2'] = w2
+        tf['w3'] = w3
+        # Bigrams
+        for wi, wj in util.ngrams(2, ('W4', 'W3', 'W2', 'W1', 'w0', 'w1', 'w2', 'w3')):
+            tf[(wi, wj)] = (tf[wi], tf[wj])
+        # Trigrams
+        for wi, wj, wk in util.ngrams(3, ('W4', 'W3', 'W2', 'W1', 'w0', 'w1', 'w2', 'w3')):
+            tf[(wi, wj, wk)] = (tf[wi], tf[wj], tf[wk])
+        # Previous action
+        tf['a1'] = a1
+        # Yield all features as strings:
+        for template, value in tf.items():
+            if isinstance(template, tuple):
+                template = ' '.join(template)
+            if isinstance(value, tuple):
+                value = ' '.join(str(x) for x in value)
+            yield template + ' = ' + str(value)
+
+    def features(self):
+        if self._features is None:
+            if self.pred is None:
+                self._features = collections.Counter()
+            else:
+                self._features = collections.Counter(self.pred.features())
+                for f in self.pred.local_features():
+                    f = f + ' : ' + str(self.action)
+                    self._features[f] += 1
+        return self._features
