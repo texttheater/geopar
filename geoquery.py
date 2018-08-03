@@ -30,3 +30,18 @@ def integrate_allowed(term, arg_num):
     if len(name) == 1: # single-letter names for testing
         return True
     return False
+
+
+def pred_class(functor_name):
+    if functor_name in ('most', 'fewest'):
+        return 'superlative_count'
+    if functor_name in ('largest', 'highest', 'longest', 'lowest', 'shortest', 'smallest'):
+        return 'superlative'
+    if functor_name in ('sum', 'count'):
+        return 'aggregate'
+    if functor_name == 'answer':
+        return 'answer'
+    if functor_name == 'const':
+        return 'const'
+    return 'other'
+

@@ -241,7 +241,7 @@ class ParseItem:
                     yield None
         def get_last_actions():
             item = self
-            for i in range(1):
+            for i in range(4):
                 yield item.action
                 if item.pred is not None:
                     item = item.pred
@@ -253,7 +253,7 @@ class ParseItem:
             return term.functor_name
         s00, s01, s10, s11, s12 = get_stack_terms()
         W4, W3, W2, W1, w0, w1, w2, w3 = get_unigrams()
-        (a1,) = get_last_actions()
+        a1, a2, a3, a4 = get_last_actions()
         # Now we populate tf with the template features.
         # Stack predicates
         tf['s00p'] = term2functor_name(s00)
@@ -265,6 +265,16 @@ class ParseItem:
         for s0ip in ('s00p', 's01p'):
             for s1jp in ('s10p', 's11p', 's12p'):
                 tf[(s0ip, s1jp)] = (tf[s0ip], tf[s1jp])
+        # Stack predicates classes
+        tf['s00c'] = geoquery.pred_class(tf['s00p'])
+        tf['s01c'] = geoquery.pred_class(tf['s01p'])
+        tf['s10c'] = geoquery.pred_class(tf['s10p'])
+        tf['s11c'] = geoquery.pred_class(tf['s11p'])
+        tf['s12c'] = geoquery.pred_class(tf['s12p'])
+        # Combinations thereof
+        for s0ic in ('s00c', 's01c'):
+            for s1jc in ('s10c', 's11c', 's12c'):
+                tf[(s0ic, s1jc)] = (tf[s0ic], tf[s1jc])
         # Unigrams
         tf['W4'] = W4
         tf['W3'] = W3
@@ -280,8 +290,11 @@ class ParseItem:
         # Trigrams
         for wi, wj, wk in util.ngrams(3, ('W4', 'W3', 'W2', 'W1', 'w0', 'w1', 'w2', 'w3')):
             tf[(wi, wj, wk)] = (tf[wi], tf[wj], tf[wk])
-        # Previous action
+        # Previous actions
         tf['a1'] = a1
+        tf['a1a2'] = (a1, a2)
+        tf['a1a2a3'] = (a1, a2, a3)
+        tf['a1a2a3a4'] = (a1, a2, a3, a4)
         # Yield all features as strings:
         for template, value in tf.items():
             if isinstance(template, tuple):
