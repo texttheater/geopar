@@ -226,7 +226,7 @@ class ParseItem:
         tf = {}
         # We first extract the atomic values from the context that we will use
         # in template features.
-        def get_stack_predicates():
+        def get_stack_terms():
             for sp, ssp in ((0, 0), (0, 1), (1, 0), (1, 1), (1, 2)):
                 try:
                     se = self.stack[sp]
@@ -245,16 +245,22 @@ class ParseItem:
                 yield item.action
                 if item.pred is not None:
                     item = item.pred
-        s00p, s01p, s10p, s11p, s12p = get_stack_predicates()
+        def term2functor_name(term):
+            if isinstance(term, terms.ConjunctiveTerm):
+                term = term.conjuncts[0]
+            if term is None:
+                return None
+            return term.functor_name
+        s00, s01, s10, s11, s12 = get_stack_terms()
         W4, W3, W2, W1, w0, w1, w2, w3 = get_unigrams()
         (a1,) = get_last_actions()
         # Now we populate tf with the template features.
         # Stack predicates
-        tf['s00p'] = s00p
-        tf['s01p'] = s01p
-        tf['s10p'] = s10p
-        tf['s11p'] = s11p
-        tf['s12p'] = s12p
+        tf['s00p'] = term2functor_name(s00)
+        tf['s01p'] = term2functor_name(s01)
+        tf['s10p'] = term2functor_name(s10)
+        tf['s11p'] = term2functor_name(s11)
+        tf['s12p'] = term2functor_name(s12)
         # Combinations thereof
         for s0ip in ('s00p', 's01p'):
             for s1jp in ('s10p', 's11p', 's12p'):
