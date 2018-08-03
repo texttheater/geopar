@@ -1,4 +1,5 @@
-/data/x??
+/oracles.log
+/model.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

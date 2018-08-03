@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import terms
 
 
@@ -35,12 +36,15 @@ def geo880_test():
     return read_geoquery_file(path)
 
 
-def geo880_train_val(fold):
-    oracle_path = os.path.join(os.path.dirname(__file__), 'data', 'geo880-train-shuffled-oracles.json'.format(fold))
-    val_path = os.path.join(os.path.dirname(__file__), 'data', 'geo880-train-shuffled'.format(fold))
-    oracles = read_oracle_file(oracle_path)
-    val = read_geoquery_file(val_path)
-    oracles = oracles[:fold * 60] + oracles[(fold + 1) * 60:]
-    val = val[fold * 60:(fold + 1) * 60]
-    return oracles, val
-    
+def geo880_train_val():
+    """Returns a random train-val split from the data.
+
+    Includes 60 validation examples and 539 training oracles.
+    """
+    examples = geo880_train()
+    oracles = read_oracle_file('oracles.json')
+    combined = list(zip(examples, oracles))
+    random.shuffle(combined)
+    val_examples = [example for example, oracle in combined[:60]]
+    train_oracles = [oracle for example, oracle in combined[60:]]
+    return train_oracles, val_examples
