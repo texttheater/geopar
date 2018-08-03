@@ -405,7 +405,6 @@ parse([what,states,border,new,hampshire,?], answer(A,(state(A),next_to(A,B),cons
 parse([what,is,the,lowest,point,of,colorado,?], answer(A,lowest(A,(place(A),loc(A,B),const(B,stateid(colorado)))))).
 parse([what,is,the,biggest,city,in,arizona,?], answer(A,largest(A,(city(A),loc(A,B),const(B,stateid(arizona)))))).
 parse([what,state,is,columbus,the,capital,of,?], answer(A,(state(A),const(B,cityid(columbus,_)),capital(B),loc(B,A)))).
-parse([what,texas,city,has,the,largest,population,?], answer(A,largest(B,(const(C,stateid(texas)),city(A),loc(A,C),population(A,B))))).
 parse([how,many,rivers,run,through,the,states,bordering,colorado,?], answer(A,count(B,(river(B),traverse(B,C),state(C),next_to(C,D),const(D,stateid(colorado))),A))).
 parse([what,is,the,longest,river,flowing,through,new,york,?], answer(A,longest(A,(river(A),traverse(A,B),const(B,stateid('new york')))))).
 parse([give,me,the,cities,in,virginia,?], answer(A,(city(A),loc(A,B),const(B,stateid(virginia))))).
