@@ -230,4 +230,3 @@ class TermsTestCase(unittest.TestCase):
         count = 0
         for words, mr in data.geo880_train():
             count += len(list(f for s in mr.subterms() for f in s.fragments()))
-        print(count, 'fragments')
