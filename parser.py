@@ -2,6 +2,7 @@ import models
 import parseitems
 import random
 import sys
+import time
 import util
 
 
@@ -24,12 +25,13 @@ def train(train_data, val_data, lex, max_epochs, patience):
     best_model = model
     no_improvement_since = 0
     for t in range(max_epochs):
+        start_time = time.time()
         random.shuffle(train_data)
         train_one_epoch(train_data, lex, model)
         # Validate and see if the model got better:
         val_model = model.copy()
         val_model.average_weights()
-        val_accuracy = validate(t, val_data, lex, val_model)
+        val_accuracy = validate(t, start_time, val_data, lex, val_model)
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
             best_model = val_model
@@ -61,7 +63,7 @@ def train_one_epoch(train_data, lex, model):
                          highest_scoring_item.features())
 
 
-def validate(epoch, val_data, lex, model):
+def validate(epoch, start_time, val_data, lex, model):
     total = 0
     parsed = 0
     correct = 0
@@ -78,6 +80,7 @@ def validate(epoch, val_data, lex, model):
     coverage = parsed / total
     recall = correct / total
     precision = correct / parsed
-    print('epoch', epoch, 'coverage', coverage, 'recall', recall, 'precision',
-          precision, file=sys.stderr)
+    elapsed = time.time() - start_time
+    print('epoch', epoch, 'elapsed', elapsed, 'coverage', coverage, 'recall',
+          recall, 'precision', precision, file=sys.stderr)
     return recall
