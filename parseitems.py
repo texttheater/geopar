@@ -26,6 +26,7 @@ class ParseItem:
         self.finished = finished
         self.action = action
         self.pred = pred
+        self._local_features = None
         self._features = None
 
     def idle(self):
@@ -219,8 +220,11 @@ class ParseItem:
             str(self.action) + ')'
 
     def local_features(self):
+        if self._local_features is not None:
+            return self._local_features
+        result = []
         # The 'bias' feature is present in every item:
-        yield 'bias'
+        result.append('bias')
         # All other features are template features. We create a dict called
         # tf, mapping templates to the values of these templates for this item.
         tf = {}
@@ -301,7 +305,9 @@ class ParseItem:
                 template = ' '.join(template)
             if isinstance(value, tuple):
                 value = ' '.join(str(x) for x in value)
-            yield template + ' = ' + str(value)
+            result.append(template + ' = ' + str(value))
+        self._local_features = result
+        return result
 
     def features(self):
         if self._features is None:
