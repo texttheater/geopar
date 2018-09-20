@@ -1,5 +1,6 @@
 import collections
 import config
+import feature_vectors as fv
 import geoquery
 import lstack
 import oracle
@@ -218,12 +219,16 @@ class ParseItem:
             ', '.join(self.words[self.offset:]) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
 
-    def local_features(self):
-        # The 'bias' feature is present in every item:
-        yield 'bias'
-        # All other features are template features. We create a dict called
-        # tf, mapping templates to the values of these templates for this item.
-        tf = {}
+    def local_feature_vector(self):
+        """Returns the local feature vector for this item.
+
+        The feature vector is represented as a numpy array with one component
+        for every feature template (+ one bias component). The values are
+        hashes of the value for each template.
+        """
+        if self._local_feature_vector is not None:
+            return self.local_feature_vector
+        vec = fv.LocalFeatureVector()
         # We first extract the atomic values from the context that we will use
         # in template features.
         def get_stack_terms():
@@ -254,62 +259,58 @@ class ParseItem:
         s00, s01, s10, s11, s12 = get_stack_terms()
         W4, W3, W2, W1, w0, w1, w2, w3 = get_unigrams()
         a1, a2, a3, a4 = get_last_actions()
-        # Now we populate tf with the template features.
+        # Now we populate vec with the template features.
         # Stack predicates
-        tf['s00p'] = term2functor_name(s00)
-        tf['s01p'] = term2functor_name(s01)
-        tf['s10p'] = term2functor_name(s10)
-        tf['s11p'] = term2functor_name(s11)
-        tf['s12p'] = term2functor_name(s12)
+        vec.add(term2functor_name(s00))
+        vec.add(term2functor_name(s01))
+        vec.add(term2functor_name(s10))
+        vec.add(term2functor_name(s11))
+        vec.add(term2functor_name(s12))
         # Combinations thereof
-        for s0ip in ('s00p', 's01p'):
-            for s1jp in ('s10p', 's11p', 's12p'):
-                tf[(s0ip, s1jp)] = (tf[s0ip], tf[s1jp])
+        for s0ip in (s00p, s01p):
+            for s1jp in (s10p, s11p, s12p):
+                vec.add(term2functor_name(s0ip), term2functor_name(s1jp))
         # Stack predicates classes
-        tf['s00c'] = geoquery.pred_class(tf['s00p'])
-        tf['s01c'] = geoquery.pred_class(tf['s01p'])
-        tf['s10c'] = geoquery.pred_class(tf['s10p'])
-        tf['s11c'] = geoquery.pred_class(tf['s11p'])
-        tf['s12c'] = geoquery.pred_class(tf['s12p'])
+        vec.add(geoquery.pred_class(s00p))
+        vec.add(geoquery.pred_class(s01p))
+        vec.add(geoquery.pred_class(s10p))
+        vec.add(geoquery.pred_class(s11p))
+        vec.add(geoquery.pred_class(s12p))
         # Combinations thereof
-        for s0ic in ('s00c', 's01c'):
-            for s1jc in ('s10c', 's11c', 's12c'):
-                tf[(s0ic, s1jc)] = (tf[s0ic], tf[s1jc])
+        for s0ic in (s00c, s01c):
+            for s1jc in (s10c, s11c, s12c):
+                vec.add(geoquery.pred_class(s01c), geoquery.pred_class(s1jc))
         # Unigrams
-        tf['W4'] = W4
-        tf['W3'] = W3
-        tf['W2'] = W2
-        tf['W1'] = W1
-        tf['w0'] = w0
-        tf['w1'] = w1
-        tf['w2'] = w2
-        tf['w3'] = w3
+        vec.add(W4)
+        vec.add(W3)
+        vec.add(W2)
+        vec.add(W1)
+        vec.add(w0)
+        vec.add(w1)
+        vec.add(w2)
+        vec.add(w3)
         # Bigrams
-        for wi, wj in util.ngrams(2, ('W4', 'W3', 'W2', 'W1', 'w0', 'w1', 'w2', 'w3')):
-            tf[(wi, wj)] = (tf[wi], tf[wj])
+        for wi, wj in util.ngrams(2, (W4, W3, W2, W1, w0, w1, w2, w3)):
+            vec.add(wi, wj)
         # Trigrams
-        for wi, wj, wk in util.ngrams(3, ('W4', 'W3', 'W2', 'W1', 'w0', 'w1', 'w2', 'w3')):
-            tf[(wi, wj, wk)] = (tf[wi], tf[wj], tf[wk])
-        # Previous actions
-        tf['a1'] = a1
-        tf['a1a2'] = (a1, a2)
-        tf['a1a2a3'] = (a1, a2, a3)
-        tf['a1a2a3a4'] = (a1, a2, a3, a4)
-        # Yield all features as strings:
-        for template, value in tf.items():
-            if isinstance(template, tuple):
-                template = ' '.join(template)
-            if isinstance(value, tuple):
-                value = ' '.join(str(x) for x in value)
-            yield template + ' = ' + str(value)
+        for wi, wj, wk in util.ngrams(3, (W4, W3, W2, W1, w0, w1, w2, w3)):
+            vec.add(wi, wj, wk)
+        self._local_feature_vector = vec
+        return vec
 
-    def features(self):
-        if self._features is None:
-            if self.pred is None:
-                self._features = collections.Counter()
-            else:
-                self._features = collections.Counter(self.pred.features())
-                for f in self.pred.local_features():
-                    f = f + ' : ' + str(self.action)
-                    self._features[f] += 1
-        return self._features
+    def feature_vector(self):
+        """Returns the feature vector for this item.
+
+        The feature vector is returned as a numpy array representing a hash
+        kernel with a fixed number of dimensions. The values are occurrence
+        counts for each bucket across the history of this item.
+        """
+        if self._feature_vector is not None:
+            return self._feature_vector
+        if self.pred is None:
+            self._features = fv.zeroes()
+        else:
+            self._features = self.pred.feature_vector() \
+                + self.pred.local_feature_vector().with_action(*self.action)
+        self._feature_vector = vec
+        return vec
