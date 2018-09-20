@@ -330,21 +330,21 @@ class ItemsTestCase(unittest.TestCase):
         ]
         self._test_action_sequence(words, actions, target_mr)
 
-    def test_example8(self):
-        words = 'what texas city has the largest population ?'.split()
-        target_mr = terms.from_string('answer(A,largest(B,(const(C,stateid(texas)),city(A),loc(A,C),population(A,B)))))')
-        actions = [
-            ('skip',),
-            ('shift', 1, 'const_1(A,stateid(texas))'),
-            ('shift', 1, 'city_(A)'),
-            ('sdrop',),
-            ('coref', 1, 1, 0, 2),
-            ('coref', 0, 1, 0, 1),
-            ('pop',),
-            ('pop',),
-            ('sdrop',),
-        ] # FIXME But what now!
-        self._test_action_sequence(words, actions, target_mr)
+    #def test_example8(self):
+    #    words = 'what texas city has the largest population ?'.split()
+    #    target_mr = terms.from_string('answer(A,largest(B,(const(C,stateid(texas)),city(A),loc(A,C),population(A,B)))))')
+    #    actions = [
+    #        ('skip',),
+    #        ('shift', 1, 'const_1(A,stateid(texas))'),
+    #        ('shift', 1, 'city_(A)'),
+    #        ('sdrop',),
+    #        ('coref', 1, 1, 0, 2),
+    #        ('coref', 0, 1, 0, 1),
+    #        ('pop',),
+    #        ('pop',),
+    #        ('sdrop',),
+    #    ] # FIXME But what now!
+    #    self._test_action_sequence(words, actions, target_mr)
     
 
     def _test_action_sequence(self, words, actions, target_mr):
