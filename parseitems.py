@@ -27,7 +27,8 @@ class ParseItem:
         self.finished = finished
         self.action = action
         self.pred = pred
-        self._features = None
+        self._feature_vector = None
+        self._local_feature_vector = None
 
     def idle(self):
         if not self.finished:
@@ -219,7 +220,7 @@ class ParseItem:
             ', '.join(self.words[self.offset:]) + '], ' + str(self.finished) + ', ' + \
             str(self.action) + ')'
 
-    def local_feature_vector(self):
+    def local_feature_vector(self, voc): # TODO rename to "state_hashes", "state_vector" or sth.?
         """Returns the local feature vector for this item.
 
         The feature vector is represented as a numpy array with one component
@@ -227,8 +228,9 @@ class ParseItem:
         hashes of the value for each template.
         """
         if self._local_feature_vector is not None:
-            return self.local_feature_vector
-        vec = fv.LocalFeatureVector()
+            return self._local_feature_vector
+        vec = fv.LocalFeatureVector(voc, 44)
+        vec.add('bias')
         # We first extract the atomic values from the context that we will use
         # in template features.
         def get_stack_terms():
@@ -250,36 +252,40 @@ class ParseItem:
                 yield item.action
                 if item.pred is not None:
                     item = item.pred
-        def term2functor_name(term):
-            if isinstance(term, terms.ConjunctiveTerm):
-                term = term.conjuncts[0]
-            if term is None:
-                return None
-            return term.functor_name
         s00, s01, s10, s11, s12 = get_stack_terms()
         W4, W3, W2, W1, w0, w1, w2, w3 = get_unigrams()
         a1, a2, a3, a4 = get_last_actions()
+        s00p = geoquery.term2functor_name(s00)
+        s01p = geoquery.term2functor_name(s01)
+        s10p = geoquery.term2functor_name(s10)
+        s11p = geoquery.term2functor_name(s11)
+        s12p = geoquery.term2functor_name(s12)
+        s00c = geoquery.pred_class(s00p)
+        s01c = geoquery.pred_class(s01p)
+        s10c = geoquery.pred_class(s10p)
+        s11c = geoquery.pred_class(s11p)
+        s12c = geoquery.pred_class(s12p)
         # Now we populate vec with the template features.
         # Stack predicates
-        vec.add(term2functor_name(s00))
-        vec.add(term2functor_name(s01))
-        vec.add(term2functor_name(s10))
-        vec.add(term2functor_name(s11))
-        vec.add(term2functor_name(s12))
+        vec.add(s00p)
+        vec.add(s01p)
+        vec.add(s10p)
+        vec.add(s11p)
+        vec.add(s12p)
         # Combinations thereof
         for s0ip in (s00p, s01p):
             for s1jp in (s10p, s11p, s12p):
-                vec.add(term2functor_name(s0ip), term2functor_name(s1jp))
+                vec.add(s0ip, s1jp)
         # Stack predicates classes
-        vec.add(geoquery.pred_class(s00p))
-        vec.add(geoquery.pred_class(s01p))
-        vec.add(geoquery.pred_class(s10p))
-        vec.add(geoquery.pred_class(s11p))
-        vec.add(geoquery.pred_class(s12p))
+        vec.add(s00c)
+        vec.add(s01c)
+        vec.add(s10c)
+        vec.add(s11c)
+        vec.add(s12c)
         # Combinations thereof
         for s0ic in (s00c, s01c):
             for s1jc in (s10c, s11c, s12c):
-                vec.add(geoquery.pred_class(s01c), geoquery.pred_class(s1jc))
+                vec.add(s01c, s1jc)
         # Unigrams
         vec.add(W4)
         vec.add(W3)
@@ -298,7 +304,7 @@ class ParseItem:
         self._local_feature_vector = vec
         return vec
 
-    def feature_vector(self):
+    def feature_vector(self, voc):
         """Returns the feature vector for this item.
 
         The feature vector is returned as a numpy array representing a hash
@@ -308,9 +314,9 @@ class ParseItem:
         if self._feature_vector is not None:
             return self._feature_vector
         if self.pred is None:
-            self._features = fv.zeroes()
+            vec = fv.zeros()
         else:
-            self._features = self.pred.feature_vector() \
-                + self.pred.local_feature_vector().with_action(*self.action)
+            vec = self.pred.feature_vector(voc) \
+                + self.pred.local_feature_vector(voc).with_action(*self.action)
         self._feature_vector = vec
         return vec

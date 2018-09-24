@@ -1,4 +1,5 @@
 import feature_vectors as fv
+import numpy as np
 
 
 class Perceptron:
@@ -19,7 +20,7 @@ class Perceptron:
         self.totals += self.weights
 
     def average_weights(self):
-        self.weights = self.total / self.update_counter
+        self.weights = self.totals / self.update_counter
 
     def copy(self):
         return Perceptron(self.update_counter, self.weights, self.totals)

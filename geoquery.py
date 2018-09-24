@@ -4,6 +4,7 @@
 
 import augment
 import config
+import terms
 
 
 def coref_allowed(term, arg_num):
@@ -32,6 +33,14 @@ def integrate_allowed(term, arg_num):
     return False
 
 
+def term2functor_name(term):
+    if isinstance(term, terms.ConjunctiveTerm):
+        term = term.conjuncts[0]
+    if term is None:
+        return None
+    return term.functor_name
+
+
 def pred_class(functor_name):
     if functor_name in ('most', 'fewest'):
         return 'superlative_count'
@@ -44,4 +53,3 @@ def pred_class(functor_name):
     if functor_name == 'const':
         return 'const'
     return 'other'
-

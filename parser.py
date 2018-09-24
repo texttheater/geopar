@@ -6,11 +6,11 @@ import time
 import util
 
 
-def parse(words, lex, model):
+def parse(words, voc, lex, model):
     agenda = [parseitems.initial(words)]
     while any(not i.finished for i in agenda):
         agenda = [s for i in agenda for s in i.successors(lex)]
-        agenda.sort(key=lambda i: model.score(i.features()), reverse=True)
+        agenda.sort(key=lambda i: model.score(i.feature_vector(voc)), reverse=True)
         beam = agenda[:min(10, len(agenda))]
         agenda = beam
     if not agenda:
@@ -18,7 +18,7 @@ def parse(words, lex, model):
     return agenda[0].stack[0].mr
 
 
-def train(train_data, val_data, lex, max_epochs, patience):
+def train(train_data, voc, val_data, lex, max_epochs, patience):
     train_data = list(train_data)
     model = models.Perceptron()
     best_accuracy = 0
@@ -27,11 +27,11 @@ def train(train_data, val_data, lex, max_epochs, patience):
     for t in range(max_epochs):
         start_time = time.time()
         random.shuffle(train_data)
-        train_one_epoch(train_data, lex, model)
+        train_one_epoch(train_data, voc, lex, model)
         # Validate and see if the model got better:
         val_model = model.copy()
         val_model.average_weights()
-        val_accuracy = validate(t, start_time, val_data, lex, val_model)
+        val_accuracy = validate(t, start_time, val_data, voc, lex, val_model)
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
             best_model = val_model
@@ -43,7 +43,7 @@ def train(train_data, val_data, lex, max_epochs, patience):
     return best_model
 
 
-def train_one_epoch(train_data, lex, model):
+def train_one_epoch(train_data, voc, lex, model):
     for words, gold_action_sequence in train_data:
         def is_correct(item):
             return all(g == i for g, i in
@@ -51,7 +51,7 @@ def train_one_epoch(train_data, lex, model):
         agenda = [parseitems.initial(words)]
         while any(not i.finished for i in agenda):
             agenda = [s for i in agenda for s in i.successors(lex)]
-            agenda.sort(key=lambda i: model.score(i.features()), reverse=True)
+            agenda.sort(key=lambda i: model.score(i.feature_vector(voc)), reverse=True)
             beam = agenda[:min(10, len(agenda))]
             if not any(is_correct(i) for i in beam):
                 break # early update
@@ -59,18 +59,18 @@ def train_one_epoch(train_data, lex, model):
         highest_scoring_item = agenda[0]
         highest_scoring_correct_item = next(i for i in agenda if is_correct(i))
         if highest_scoring_item != highest_scoring_correct_item:
-            model.update(highest_scoring_correct_item.features(),
-                         highest_scoring_item.features())
+            model.update(highest_scoring_correct_item.feature_vector(voc),
+                         highest_scoring_item.feature_vector(voc))
 
 
-def validate(epoch, start_time, val_data, lex, model):
+def validate(epoch, start_time, val_data, voc, lex, model):
     total = 0
     parsed = 0
     correct = 0
     for words, gold_mr in val_data:
         total += 1
         try:
-            pred_mr = parse(words, lex, model)
+            pred_mr = parse(words, voc, lex, model)
         except ValueError:
             print('no parse for', words, file=sys.stderr)
             continue
