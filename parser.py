@@ -18,12 +18,12 @@ def parse(words, lex, model):
     return agenda[0].stack[0].mr
 
 
-def train(train_data, val_data, lex, max_epochs, patience):
+def train(train_data, val_data, lex, max_epochs, initial_patience):
     train_data = list(train_data)
     model = models.Perceptron()
     best_accuracy = 0
     best_model = model
-    no_improvement_since = 0
+    patience = initial_patience
     for t in range(max_epochs):
         start_time = time.time()
         random.shuffle(train_data)
@@ -31,15 +31,19 @@ def train(train_data, val_data, lex, max_epochs, patience):
         # Validate and see if the model got better:
         val_model = model.copy()
         val_model.average_weights()
-        val_accuracy = validate(t, start_time, val_data, lex, val_model)
+        val_coverage, val_accuracy, val_precision = validate(val_data, lex, val_model)
+        elapsed = time.time() - start_time
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
             best_model = val_model
-            no_improvement_since = 0
+            patience = initial_patience
         else:
-            no_improvement_since += 1
-            if no_improvement_since > patience:
-                break
+            patience -= 1
+        print('epoch', t, 'elapsed', elapsed, 'coverage', val_coverage,
+              'recall', val_accuracy, 'precision', val_precision,
+              'patience', patience, file=sys.stderr)
+        if patience == 0:
+            break
     return best_model
 
 
@@ -63,7 +67,7 @@ def train_one_epoch(train_data, lex, model):
                          highest_scoring_item.features())
 
 
-def validate(epoch, start_time, val_data, lex, model):
+def validate(val_data, lex, model):
     total = 0
     parsed = 0
     correct = 0
@@ -80,7 +84,4 @@ def validate(epoch, start_time, val_data, lex, model):
     coverage = parsed / total
     recall = correct / total
     precision = correct / parsed
-    elapsed = time.time() - start_time
-    print('epoch', epoch, 'elapsed', elapsed, 'coverage', coverage, 'recall',
-          recall, 'precision', precision, file=sys.stderr)
-    return recall
+    return coverage, recall, precision
