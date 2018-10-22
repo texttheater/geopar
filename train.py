@@ -12,7 +12,7 @@ import pickle
 import random
 
 
-random.seed(1336) # for reproducibility
+random.seed(1337) # for reproducibility
 
 
 if __name__ == '__main__':
